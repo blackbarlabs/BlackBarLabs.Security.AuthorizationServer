@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using BlackBarLabs.Security.AuthorizationServer.API.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BlackBarLabs.Security.CredentialProvider.ImplicitCreation;
 using BlackBarLabs.Api.Tests;
 using BlackBarLabs.Security.AuthorizationServer.API.Controllers;
+using BlackBarLabs.Security.Authorization;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {

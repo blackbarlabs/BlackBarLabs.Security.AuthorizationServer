@@ -37,3 +37,12 @@
 [submodule "BlackBarLabs.Security.CredentialProvider.ImplicitCreation"]
 	path = BlackBarLabs.Security.CredentialProvider.ImplicitCreation
 	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.ImplicitCreation.git
+[submodule "BlackBarLabs.Security.CredentialProvider.Voucher"]
+	path = BlackBarLabs.Security.CredentialProvider.Voucher
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.Voucher.git
+[submodule "BlackBarLabs.Security.Authorization"]
+	path = BlackBarLabs.Security.Authorization
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.Authorization.git
+[submodule "BlackBarLabs.Security.AuthorizationClient"]
+	path = BlackBarLabs.Security.AuthorizationClient
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationClient.git

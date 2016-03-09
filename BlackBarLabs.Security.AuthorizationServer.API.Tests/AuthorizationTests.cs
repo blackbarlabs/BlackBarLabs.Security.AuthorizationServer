@@ -6,6 +6,8 @@ using BlackBarLabs.Security.Crypto;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BlackBarLabs.Api.Tests;
 using BlackBarLabs.Security.AuthorizationServer.API.Controllers;
+using System.Configuration;
+using BlackBarLabs.Security.Authorization;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
@@ -100,6 +102,44 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 };
                 await testSession.PostAsync<AuthorizationController>(auth2)
                     .AssertAsync(System.Net.HttpStatusCode.Conflict);
+            });
+        }
+
+        [TestMethod]
+        public async Task VoucherAuthentication()
+        {
+            var authId = Guid.NewGuid();
+
+            var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
+            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + TimeSpan.FromMinutes(10.0));
+
+            var credentialVoucher = new CredentialsType
+            {
+                Method = CredentialValidationMethodTypes.Voucher,
+                Provider = trustedVoucherProverId,
+                Token = token,
+                UserId = authId.ToString("N"),
+            };
+            var credentialImplicit = new CredentialsType
+            {
+                Method = CredentialValidationMethodTypes.Implicit,
+                Provider = new Uri("http://www.example.com/Auth"),
+                Token = "Password#1",
+                UserId = authId.ToString("N"),
+            };
+
+            await TestSession.StartAsync(async (testSession) =>
+            {
+                await testSession.CreateAuthorizationAsync(new CredentialsType[] { credentialVoucher, credentialImplicit });
+
+                var session = new Resources.SessionPost()
+                {
+                    Id = Guid.NewGuid(),
+                    AuthorizationId = authId,
+                    
+                };
+                await testSession.PostAsync<SessionController>(session)
+                    .AssertAsync(System.Net.HttpStatusCode.Created);
             });
         }
     }

@@ -73,6 +73,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -167,6 +168,10 @@
       <Project>{e2f3fcfb-89c8-47b3-b3d2-ae35e52a84fa}</Project>
       <Name>BlackBarLabs.Security.AuthorizationServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BlackBarLabs.Security.Authorization\BlackBarLabs.Security.Authorization.csproj">
+      <Project>{6e009bb4-a644-43a5-95c7-0a3918f61b04}</Project>
+      <Name>BlackBarLabs.Security.Authorization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BlackBarLabs.Security.CredentialProvider.Doubles\BlackBarLabs.Security.CredentialProvider.Doubles.csproj">
       <Project>{5a7bd241-b548-46f6-8c49-74e7e58a721b}</Project>
       <Name>BlackBarLabs.Security.CredentialProvider.Doubles</Name>
@@ -178,6 +183,10 @@
     <ProjectReference Include="..\BlackBarLabs.Security.CredentialProvider.ImplicitCreation\BlackBarLab.Security.CredentialProvider.ImplicitCreation.csproj">
       <Project>{dfc25fda-fc37-47d1-87dd-2a4adb659a69}</Project>
       <Name>BlackBarLab.Security.CredentialProvider.ImplicitCreation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlackBarLabs.Security.CredentialProvider.Voucher\BlackBarLabs.Security.CredentialProvider.Voucher.csproj">
+      <Project>{939b50b2-eae2-454e-ac01-da162da292c6}</Project>
+      <Name>BlackBarLabs.Security.CredentialProvider.Voucher</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlackBarLabs.Security.CredentialProvider\BlackBarLabs.Security.CredentialProvider.csproj">
       <Project>{a9d838c7-31a5-4b36-98f8-f37442e10dc3}</Project>
@@ -193,7 +202,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>

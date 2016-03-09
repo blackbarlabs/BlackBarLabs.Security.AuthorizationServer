@@ -1,13 +1,11 @@
-﻿using BlackBarLabs.Api.Tests;
-using BlackBarLabs.Security.AuthorizationServer.API.Controllers;
-using BlackBarLabs.Security.CredentialProvider.Facebook.Tests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
+
+using BlackBarLabs.Api.Tests;
+using BlackBarLabs.Security.Authorization;
+using BlackBarLabs.Security.AuthorizationServer.API.Controllers;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
@@ -34,7 +32,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             {
                 Id = sessionId,
                 AuthorizationId = auth.Id,
-                Credentials = new Models.CredentialsType()
+                Credentials = new CredentialsType()
                 {
                     Method = CredentialValidationMethodTypes.Facebook,
                     Provider = new Uri("http://api.facebook.com"),
@@ -48,7 +46,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         }
 
         public static async Task<HttpResponseMessage> AuthenticateSession(this TestSession testSession,
-            Guid sessionId, Guid authId, Models.CredentialsType credential)
+            Guid sessionId, Guid authId, CredentialsType credential)
         {
             var session = new Resources.SessionPut()
             {
