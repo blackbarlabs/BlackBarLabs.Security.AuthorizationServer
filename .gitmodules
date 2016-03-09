@@ -1,0 +1,12 @@
+[submodule "BlackBarLabs.Web"]
+	path = BlackBarLabs.Web
+	url = https://github.com/blackbarlabs/BlackBarLabs.Web.git
+[submodule "BlackBarLabs.Persistence.Azure"]
+	path = BlackBarLabs.Persistence.Azure
+	url = https://github.com/blackbarlabs/BlackBarLabs.Persistence.Azure.git
+[submodule "BlackBarLabs.Security"]
+	path = BlackBarLabs.Security
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.git
+[submodule "BlackBarLabs.Api"]
+	path = BlackBarLabs.Api
+	url = https://github.com/blackbarlabs/BlackBarLabs.Api.git
