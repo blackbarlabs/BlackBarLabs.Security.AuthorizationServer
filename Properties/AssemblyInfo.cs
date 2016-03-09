@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BlackBarLabs.Security.CredentialProvider.ImplicitCreation")]
+[assembly: AssemblyTitle("BlackBarLabs.Security.AuthorizationServer.Business")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("BlackBarLabs.Security.CredentialProvider.ImplicitCreation")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("BlackBarLabs.Security.AuthorizationServer.Business")]
+[assembly: AssemblyCopyright("Copyright © Microsoft 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("dfc25fda-fc37-47d1-87dd-2a4adb659a69")]
+[assembly: Guid("c7a470e8-dc05-44e2-ba53-0e01e1127222")]
 
 // Version information for an assembly consists of the following four values:
 //
