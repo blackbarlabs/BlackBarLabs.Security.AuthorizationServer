@@ -31,3 +31,6 @@
 [submodule "BlackBarLabs.Security.AuthorizationServer.Persistence.Azure"]
 	path = BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
 	url = git@github.com:blackbarlabs/BlackBarLabs.Security.AuthorizationServer.Persistence.Azure.git
+[submodule "BlackBarLabs.Security.CredentialProvider.OpenIdConnect"]
+	path = BlackBarLabs.Security.CredentialProvider.OpenIdConnect
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.OpenIdConnect.git
