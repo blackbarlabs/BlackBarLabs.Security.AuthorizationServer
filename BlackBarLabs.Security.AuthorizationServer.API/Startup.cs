@@ -54,9 +54,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API
             ConfigureAuth(app);
             ConfigureOAuth(app);
 
-            //app.UseCors(Microsoft.Owin.Cors.CorsOptions.AllowAll);
+            app.UseCors(Microsoft.Owin.Cors.CorsOptions.AllowAll);
             
-            //app.UseWebApi(config);
+            app.UseWebApi(config);
         }
 
         public void ConfigureOAuth(IAppBuilder app)
