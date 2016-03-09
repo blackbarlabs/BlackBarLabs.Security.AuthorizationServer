@@ -19,3 +19,6 @@
 [submodule "BlackBarLabs.Persistence"]
 	path = BlackBarLabs.Persistence
 	url = https://github.com/blackbarlabs/BlackBarLabs.Persistence.git
+[submodule "BlackBarLabs.Security.CredentialProvider"]
+	path = BlackBarLabs.Security.CredentialProvider
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.git
