@@ -10,3 +10,6 @@
 [submodule "BlackBarLabs.Api"]
 	path = BlackBarLabs.Api
 	url = https://github.com/blackbarlabs/BlackBarLabs.Api.git
+[submodule "BlackBarLabs.Security.AuthorizationServer"]
+	path = BlackBarLabs.Security.AuthorizationServer
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationServer.git
