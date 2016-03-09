@@ -34,3 +34,6 @@
 [submodule "BlackBarLabs.Security.CredentialProvider.OpenIdConnect"]
 	path = BlackBarLabs.Security.CredentialProvider.OpenIdConnect
 	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.OpenIdConnect.git
+[submodule "BlackBarLabs.Security.CredentialProvider.ImplicitCreation"]
+	path = BlackBarLabs.Security.CredentialProvider.ImplicitCreation
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.ImplicitCreation.git
