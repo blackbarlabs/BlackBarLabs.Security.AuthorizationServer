@@ -13,3 +13,6 @@
 [submodule "BlackBarLabs.Security.AuthorizationServer"]
 	path = BlackBarLabs.Security.AuthorizationServer
 	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationServer.git
+[submodule "BlackBarLabs.Security.AuthorizationServer.Persistence"]
+	path = BlackBarLabs.Security.AuthorizationServer.Persistence
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationServer.Persistence.git
