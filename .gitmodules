@@ -22,3 +22,6 @@
 [submodule "BlackBarLabs.Security.CredentialProvider"]
 	path = BlackBarLabs.Security.CredentialProvider
 	url = https://github.com/blackbarlabs/BlackBarLabs.Security.CredentialProvider.git
+[submodule "BlackBarLabs.Security.AuthorizationServer.API"]
+	path = BlackBarLabs.Security.AuthorizationServer.API
+	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationServer.API.git
