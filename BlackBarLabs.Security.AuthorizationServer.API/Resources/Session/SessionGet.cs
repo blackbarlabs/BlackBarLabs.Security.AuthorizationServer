@@ -10,7 +10,7 @@ using System.Web.Http;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 {
-    public class SessionGet : Resource, IHttpActionResult
+    public class SessionGet : Session, IHttpActionResult
     {
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {

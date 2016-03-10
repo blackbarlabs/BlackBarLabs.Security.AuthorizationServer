@@ -56,7 +56,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
                         UserId = "0123455690",
                         Token = "ABC.123.U_AND_ME"
                     },
-                    SessionHeader = new Resources.Session.AuthHeaderProps
+                    SessionHeader = new AuthHeaderProps
                     {
                         Name = "Authorization",
                         Value = jwtToken,

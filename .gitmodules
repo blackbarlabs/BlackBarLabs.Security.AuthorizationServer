@@ -43,3 +43,6 @@
 [submodule "BlackBarLabs.Security.AuthorizationClient"]
 	path = BlackBarLabs.Security.AuthorizationClient
 	url = https://github.com/blackbarlabs/BlackBarLabs.Security.AuthorizationClient.git
+[submodule "BlackBarLabs.Core"]
+	path = BlackBarLabs.Core
+	url = https://github.com/blackbarlabs/BlackBarLabs.Core.git

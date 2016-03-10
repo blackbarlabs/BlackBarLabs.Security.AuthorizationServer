@@ -5,6 +5,7 @@ using BlackBarLabs.Security.Authorization;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 {
+    [DataContract]
     public class Authorization : Resource, IAuthorization
     {
         #region Properties

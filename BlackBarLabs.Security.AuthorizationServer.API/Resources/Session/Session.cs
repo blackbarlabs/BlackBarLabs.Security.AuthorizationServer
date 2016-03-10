@@ -8,27 +8,15 @@ using System.Web;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 {
-    public class Session : Resource
+    [DataContract]
+    public class Session : Resource, ISession
     {
-
-        public class AuthHeaderProps
-        {
-            #region Properties
-            [DataMember]
-            public string Name { get; set; }
-
-            [DataMember]
-            public string Value { get; set; }
-            #endregion
-        }
-
-
         #region Properties
 
         [DataMember]
         public Guid Id { get; set; }
 
-        [IgnoreDataMember]
+        [DataMember]
         public Guid AuthorizationId { get; set; }
 
         [DataMember]
