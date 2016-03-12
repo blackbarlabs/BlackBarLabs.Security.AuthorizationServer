@@ -62,28 +62,6 @@ namespace BlackBarLabs.Security.AuthorizationServer
             }
         }
 
-        private Roles roles;
-        public Roles Roles
-        {
-            get
-            {
-                if (default(Roles) == roles)
-                    roles = new Roles(this, this.DataContext);
-                return roles;
-            }
-        }
-
-        private Tokens tokens;
-        public Tokens Tokens
-        {
-            get
-            {
-                if (default(Tokens) == tokens)
-                    tokens = new Tokens(this, this.DataContext);
-                return tokens;
-            }
-        }
-
         #region Authorizations
 
         public delegate bool GetCredentialDelegate(CredentialValidationMethodTypes validationMethod, Uri provider, string userId, string userToken);

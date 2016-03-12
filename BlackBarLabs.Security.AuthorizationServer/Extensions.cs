@@ -64,14 +64,5 @@ namespace BlackBarLabs.Security.AuthorizationServer
             var message = string.Format(CultureInfo.InvariantCulture, "{0} is not less than {1}.", firstDate, secondDate);
             throw new ArgumentException(message, argumentName);
         }
-
-        //public static void ValidateStringSafety(this string argument, string argumentName)
-        //{
-        //    if (argument == null)
-        //        return;
-        //    var sanitizedContent = argument.HtmlSanitize();
-        //    if (sanitizedContent != argument)
-        //        throw new ArgumentException("String contains fragments that are considered unsafe", argumentName);
-        //}
     }
 }

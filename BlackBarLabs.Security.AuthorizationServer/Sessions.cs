@@ -90,8 +90,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                         saveAuthId(authorizationId);
 
                         var jwtToken = await GenerateToken(sessionId, authorizationId);
-
-                        await context.Tokens.CreateAsync(authorizationId.ToString(), jwtToken);
+                        
                         return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
                     });
                     return updateAuthResult;
