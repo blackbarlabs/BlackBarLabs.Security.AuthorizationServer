@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using BlackBarLabs.Security.AuthorizationServer.API.Models;
 using BlackBarLabs.Security.Crypto;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BlackBarLabs.Api.Tests;
 using BlackBarLabs.Security.AuthorizationServer.API.Controllers;
-using System.Configuration;
 using BlackBarLabs.Security.Authorization;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
@@ -136,7 +134,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 {
                     Id = Guid.NewGuid(),
                     AuthorizationId = authId,
-                    
                 };
                 await testSession.PostAsync<SessionController>(session)
                     .AssertAsync(System.Net.HttpStatusCode.Created);

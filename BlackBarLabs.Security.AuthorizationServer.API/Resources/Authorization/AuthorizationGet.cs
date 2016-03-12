@@ -8,13 +8,13 @@ using System.Threading;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 {
-    public class AuthorizationGet : Resource, IHttpActionResult
+    public class AuthorizationGet : Authorization, IHttpActionResult
     {
         #region Actionables
         
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Get not permitted on Authorization Resource"));
+            return Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Querying Authorization Resource is not yet supported"));
         }
 
         #endregion

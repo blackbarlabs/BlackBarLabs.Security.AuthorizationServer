@@ -31,7 +31,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
             {
                 Func<Authorizations.CredentialProviderDelegate, Task<Authorizations.CreateCredentialResult>> result = async (callback) =>
                 {
-                    return await callback(credProvider.Method, credProvider.Provider, credProvider.UserId, credProvider.Token);
+                    return await callback(credProvider.Method, credProvider.Provider, credProvider.UserId, credProvider.Token, credProvider.ClaimsProviders);
                 };
                 return result;
             }));

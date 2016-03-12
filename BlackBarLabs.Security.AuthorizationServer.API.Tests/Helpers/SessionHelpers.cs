@@ -46,12 +46,11 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         }
 
         public static async Task<HttpResponseMessage> AuthenticateSession(this TestSession testSession,
-            Guid sessionId, Guid authId, CredentialsType credential)
+            Guid sessionId, CredentialsType credential)
         {
             var session = new Resources.SessionPut()
             {
                 Id = sessionId,
-                AuthorizationId = authId,
                 Credentials = credential,
             };
             var authenticateSessionResponse = await testSession.PutAsync<SessionController>(session);

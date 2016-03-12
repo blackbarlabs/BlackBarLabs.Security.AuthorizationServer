@@ -16,12 +16,17 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
     {
         public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            //Get the session and Extrude it's information
-            Sessions.CreateSessionSuccessDelegate<HttpResponseMessage> createSessionCallback = (token, refreshToken) =>
+            var responseSession = new Session()
             {
-                this.SessionHeader = new AuthHeaderProps { Name = "Authorization", Value = token };
-                this.RefreshToken = refreshToken;
-                return this.Request.CreateResponse(HttpStatusCode.Created, this);
+                Id = this.Id,
+            };
+            //Get the session and Extrude it's information
+            Sessions.CreateSessionSuccessDelegate<HttpResponseMessage> createSessionCallback = (authorizationId, token, refreshToken) =>
+            {
+                responseSession.AuthorizationId = authorizationId;
+                responseSession.SessionHeader = new AuthHeaderProps { Name = "Authorization", Value = token };
+                responseSession.RefreshToken = refreshToken;
+                return this.Request.CreateResponse(HttpStatusCode.Created, responseSession);
             };
 
             Sessions.CreateSessionAlreadyExistsDelegate<HttpResponseMessage> alreadyExistsCallback = () =>
@@ -34,12 +39,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 return await this.Context.Sessions.CreateSessionAsync(Id, createSessionCallback, alreadyExistsCallback);
             }
 
-            return await this.Context.Sessions.CreateSessionAsync(Id, this.AuthorizationId,
+            return await this.Context.Sessions.CreateSessionAsync(Id,
                 this.Credentials.Method, this.Credentials.Provider, this.Credentials.UserId, this.Credentials.Token,
                 createSessionCallback, alreadyExistsCallback,
-                () =>
+                (message) =>
                 {
-                    return this.Request.CreateErrorResponse(HttpStatusCode.Conflict, new Exception("Invalid credentials"));
+                    return this.Request.CreateErrorResponse(HttpStatusCode.Conflict, new Exception(message));
                 });
         }
     }

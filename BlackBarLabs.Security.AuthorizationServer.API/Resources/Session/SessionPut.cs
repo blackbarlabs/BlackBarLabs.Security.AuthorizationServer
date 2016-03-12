@@ -22,10 +22,11 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
             
             // Can't update a session that does not exist
             var session = await this.Context.Sessions.AuthenticateAsync(this.Id, 
-                this.AuthorizationId, this.Credentials.Method, this.Credentials.Provider,
+                this.Credentials.Method, this.Credentials.Provider,
                 this.Credentials.UserId, this.Credentials.Token,
-                (token, refreshToken) =>
+                (authId, token, refreshToken) =>
                 {
+                    this.AuthorizationId = authId;
                     this.SessionHeader = new AuthHeaderProps { Name = "Authorization", Value = token };
                     this.RefreshToken = refreshToken;
                     return this.Request.CreateResponse(HttpStatusCode.Accepted, this);
