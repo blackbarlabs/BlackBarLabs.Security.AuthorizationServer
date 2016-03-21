@@ -55,7 +55,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                     {
                         await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId); // AuthorizationId may not need to be stored
 
-                        var jwtToken = await GenerateToken(sessionId, authorizationId);
+                        var jwtToken = await GenerateToken(sessionId, authorizationId, externalClaimsLocations);
                         return onSuccess(authorizationId, jwtToken, refreshToken);
                     }
                     catch (BlackBarLabs.Persistence.ResourceAlreadyExistsException)
@@ -82,17 +82,17 @@ namespace BlackBarLabs.Security.AuthorizationServer
             var result = await await AuthenticateAsync(credentialValidationMethod, credentialsProviderId, username, token,
                 async (authorizationId, externalClaimsLocations) =>
                 {
-                    var updateAuthResult = await await this.dataContext.Sessions.UpdateAuthentication(sessionId, async (authId, saveAuthId) =>
-                    {
-                        if (default(Guid) != authId)
-                            return onAlreadyAuthenticated();
+                    var updateAuthResult = await await this.dataContext.Sessions.UpdateAuthentication(sessionId,
+                        async (authId, saveAuthId) =>
+                        {
+                            if (default(Guid) != authId)
+                                return onAlreadyAuthenticated();
 
-                        saveAuthId(authorizationId);
-
-                        var jwtToken = await GenerateToken(sessionId, authorizationId);
-                        
-                        return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
-                    });
+                            saveAuthId(authorizationId);
+                            var jwtToken = await GenerateToken(sessionId, authorizationId);
+                            return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
+                        },
+                        () => Task.FromResult(onNotFound()));
                     return updateAuthResult;
                 },
                 () => Task.FromResult(onNotFound()),
@@ -105,25 +105,23 @@ namespace BlackBarLabs.Security.AuthorizationServer
             Func<Guid, Uri [], T> onSuccess, Func<T> onAuthIdNotFound, Func<T> onInvalidCredential)
         {
             var provider = this.context.GetCredentialProvider(method);
-            var accessTokenTask = provider.RedeemTokenAsync(providerId, username, token);
-
-            var result = await await this.dataContext.Authorizations.FindAuthId(providerId, username,
-                async (authorizationId, externalClaimsLocations) =>
+            return await await provider.RedeemTokenAsync(providerId, username, token,
+                async (accessToken) =>
                 {
-                    var doesMatch = await this.dataContext.Authorizations.DoesMatchAsync(
-                        authorizationId, providerId, username);
-                    if (!doesMatch)
-                        return onAuthIdNotFound();
-
-                    var accessSuccessful = default(string) != await accessTokenTask;
-                    if (!accessSuccessful)
-                    {
-                        return onInvalidCredential();
-                    }
-                    return onSuccess(authorizationId, externalClaimsLocations);
+                    var result = await await this.dataContext.Authorizations.FindAuthId(providerId, username,
+                        async (authorizationId, externalClaimsLocations) =>
+                        {
+                            var doesMatch = await this.dataContext.Authorizations.DoesMatchAsync(
+                                authorizationId, providerId, username);
+                            if (!doesMatch)
+                                return onInvalidCredential();
+                            return onSuccess(authorizationId, externalClaimsLocations);
+                        },
+                        () => Task.FromResult(onAuthIdNotFound()));
+                    return result;
                 },
-                () => Task.FromResult(onAuthIdNotFound()));
-            return result;
+                () => Task.FromResult(onAuthIdNotFound()),
+                () => { throw new Exception("Could not connect to auth system"); });
         }
 
         private async Task<string> GenerateToken(Guid sessionId, Guid authorizationId = default(Guid), Uri [] credentialProviders = default(Uri[]))
@@ -148,24 +146,54 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 {
                     var httpWebRequest = WebRequest.Create(credentialProvider);
                     return await httpWebRequest.GetAsync(
-                        (IClaim[] returnedClaims) =>
+                        (BBLClaim[] returnedClaims) =>
                         {
                             return returnedClaims.Select((fetchedClaim) =>
                              {
                                  return new Claim(fetchedClaim.Type.AbsoluteUri, fetchedClaim.Value);
                              });
                         },
-                        (code, message) => default(IEnumerable<Claim>));
+                        //(code, message) => default(IEnumerable<Claim>));
+                        (code, message) => new Claim[] { new Claim(credentialProvider.AbsoluteUri, code.ToString() + message) });
                 });
-            var providedClaims = (await Task.WhenAll(providedClaimsTasks)).SelectMany(a => a);
+            var providedClaimss = await Task.WhenAll(providedClaimsTasks);
+            var providedUniqueClaimValues = new Dictionary<string, string>();
+            foreach(var providedClaims in providedClaimss)
+            {
+                if (default(IEnumerable<Claim>) == providedClaims)
+                    continue;
+                foreach(var providedClaim in providedClaims)
+                {
+                    if (providedUniqueClaimValues.ContainsKey(providedClaim.Type))
+                        continue;
+                    providedUniqueClaimValues.Add(providedClaim.Type, providedClaim.Value);
+                }
+            }
+            var serverProvidedClaims = providedUniqueClaimValues.Select(kvp =>
+                new Claim(kvp.Key, kvp.Value));
             
             var jwtToken = Security.Tokens.JwtTools.CreateToken(
                 sessionId.ToString(), DateTimeOffset.UtcNow, 
                 DateTimeOffset.UtcNow + TimeSpan.FromMinutes(tokenExpirationInMinutes),
-                claims.Concat(providedClaims),
+                claims.Concat(serverProvidedClaims),
                 "AuthServer.issuer", "AuthServer.key");
 
             return jwtToken;
+        }
+
+        private class BBLClaim : IClaim
+        {
+            public string Issuer { get; set; }
+
+            public string OriginalIssuer { get; set; }
+
+            public IDictionary<string, string> Properties { get; set; }
+
+            public Uri Type { get; set; }
+
+            public string Value { get; set; }
+
+            public string ValueType { get; set; }
         }
     }
 }

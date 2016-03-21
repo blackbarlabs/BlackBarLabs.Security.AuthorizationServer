@@ -26,6 +26,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
         Task<T> FindAuthId<T>(Uri providerId, string username,
             Func<Guid, Uri[], T> onSuccess, Func<T> onFailure);
 
+        Task<TResult> CreateCredentialProviderAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,
+            Func<TResult> success, Func<TResult> authorizationDoesNotExists, Func<Guid, TResult> alreadyAssociated);
+
         /// <summary>
         /// 
         /// </summary>
@@ -33,9 +36,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
         /// <param name="createCredentialProviderDelegateCallback">Will be invoked until it return null,
         /// is expected to invoke the delegate each time it is called to add a credential set to the authorization.</param>
         /// <returns></returns>
-        Task<bool> CreateAuthorizationAsync<T>(Guid authorizationId, Func<CredentialProviderDelegate,
-            IEnumerable<Task<T>>> createCredentialProviderDelegateCallback,
-            Func<IEnumerable<T>, bool> validateResultsCallback);
-        
+        Task<T> CreateAuthorizationAsync<T>(Guid authorizationId,
+            Func<T> onSuccess, Func<T> onAlreadyExist);
     }
 }

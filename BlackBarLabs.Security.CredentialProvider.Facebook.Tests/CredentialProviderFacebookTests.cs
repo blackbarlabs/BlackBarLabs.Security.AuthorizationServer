@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Net;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BlackBarLabs.Security.CredentialProvider.Facebook.Tests
 {
@@ -80,13 +81,16 @@ namespace BlackBarLabs.Security.CredentialProvider.Facebook.Tests
         }
 
         [TestMethod]
-        public void CredentialProviderFacebookManual()
+        public async Task CredentialProviderFacebookManual()
         {
-            var provider = new CredentialProvider.Facebook.FacebookCredentialProvider();
-            var responseTokenTask = provider.RedeemTokenAsync(new Uri("http://facebook.com/foo"),
+            var provider = new FacebookCredentialProvider();
+            var worked = await provider.RedeemTokenAsync(new Uri("http://facebook.com/foo"),
                 userId,
-                userAccessToken);
-            Assert.IsFalse(String.IsNullOrWhiteSpace(responseTokenTask.Result));
+                userAccessToken,
+                (token) => true,
+                () => false,
+                () => false);
+            Assert.IsTrue(worked);
         }
     }
 }

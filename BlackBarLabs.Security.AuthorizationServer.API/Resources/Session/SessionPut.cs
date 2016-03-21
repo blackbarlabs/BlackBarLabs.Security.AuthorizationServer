@@ -14,7 +14,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
     {
         public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (!this.Credentials.IsPopulated())
+            if (!this.IsCredentialsPopulated())
             {
                 this.Request.CreateErrorResponse(HttpStatusCode.Conflict,
                     new Exception("Invalid credentials"));

@@ -49,7 +49,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
                 {
                     Id = Id.Value,
                     AuthorizationId = authId,
-                    Credentials = new CredentialsType()
+                    Credentials = new Resources.Credential()
                     {
                         Method = CredentialValidationMethodTypes.Facebook,
                         Provider = new Uri("urn:facebook.com/Auth"),

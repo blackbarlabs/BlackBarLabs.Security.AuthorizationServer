@@ -15,15 +15,14 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
-                // Create session resource
+                // Create session, auth, and credential resources
                 var session = await testSession.CreateSessionAsync();
-
-                // Create Auth resource
                 var auth = await testSession.CreateAuthorizationAsync();
+                var credential = await testSession.CreateCredentialVoucherAsync(auth.Id);
 
                 // Authenticate session
                 var authenticateSessionResponseMessage = await testSession.AuthenticateSession(
-                    session.Id, auth.CredentialProviders[0]);
+                    session.Id, credential);
                 authenticateSessionResponseMessage.AssertSuccessPut();
                 var authenticateSession = authenticateSessionResponseMessage.GetContent<Resources.SessionPut>();
                 Assert.AreEqual(auth.Id, authenticateSession.AuthorizationId);
@@ -35,15 +34,14 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
-                // Create session resource
+                // Create session, auth, and credential resources
                 var session = await testSession.CreateSessionAsync();
-
-                // Create Auth resource
                 var auth = await testSession.CreateAuthorizationAsync();
+                var credential = await testSession.CreateCredentialVoucherAsync(auth.Id);
 
                 // Authenticate session
                 var authenticateSessionResponse = await testSession.AuthenticateSession(
-                    session.Id, auth.CredentialProviders[0]);
+                    session.Id, credential);
                 authenticateSessionResponse.Assert(System.Net.HttpStatusCode.Accepted);
 
                 // Authenticate session
@@ -51,7 +49,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 {
                     Id = Guid.NewGuid(),
                     AuthorizationId = auth.Id,
-                    Credentials = auth.CredentialProviders[0],
+                    Credentials = credential,
                 };
                 await testSession.PostAsync<SessionController>(newSession)
                     .AssertAsync(System.Net.HttpStatusCode.Created);
@@ -65,17 +63,10 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             {
                 // Create Auth resource
                 var auth = await testSession.CreateAuthorizationAsync();
-                
-                // Authenticate session
-                var newSession = new Resources.SessionPost()
-                {
-                    Id = Guid.NewGuid(),
-                    Credentials = auth.CredentialProviders[0],
-                };
-                var responseMessage = await testSession.PostAsync<SessionController>(newSession);
-                responseMessage.Assert(System.Net.HttpStatusCode.Created);
-                var responseSession = responseMessage.GetContent<Resources.Session>();
-                Assert.AreEqual(auth.Id, responseSession.AuthorizationId);
+                var credential = await testSession.CreateCredentialVoucherAsync(auth.Id);
+
+                var session = await testSession.CreateSessionWithCredentialsAsync(credential);
+                Assert.AreEqual(auth.Id, session.AuthorizationId);
             });
         }
 
@@ -84,53 +75,13 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
-                // Create Auth resource
-                var credential = new CredentialsType
-                {
-                    Method = CredentialValidationMethodTypes.Implicit,
-                    Provider = new Uri("http://www.example.com/ImplicitAuth"),
-                    UserId = Guid.NewGuid().ToString(),
-                    Token = Guid.NewGuid().ToString(),
-                };
+                var auth = await testSession.CreateAuthorizationAsync();
+                var credential = await testSession.CreateCredentialImplicitAsync(auth.Id);
 
-                var auth = await testSession.CreateAuthorizationAsync(credential);
-
-                // Authenticate session
-                var newSession = new Resources.SessionPost()
-                {
-                    Id = Guid.NewGuid(),
-                    AuthorizationId = auth.Id,
-                    Credentials = auth.CredentialProviders[0],
-                };
-                await testSession.PostAsync<SessionController>(newSession)
-                    .AssertAsync(System.Net.HttpStatusCode.Created);
+                var session = await testSession.CreateSessionWithCredentialsAsync(credential);
+                Assert.AreEqual(auth.Id, session.AuthorizationId);
             });
         }
-
-        [Ignore]
-        [TestMethod]
-        public async Task ForBrian()
-        {
-            await TestSession.StartAsync(async (testSession) =>
-            {
-                // Create Auth resource
-                var credential = new CredentialsType
-                {
-                    Method = CredentialValidationMethodTypes.Implicit,
-                    Provider = new Uri("http://orderowl.com/api/Auth"),
-                    UserId = "DarrellWagner",
-                    Token = "Password#1",
-                };
-                
-                // Authenticate session
-                var newSession = new Resources.SessionPost()
-                {
-                    Id = Guid.Parse("cb920a68-20b1-d822-d39a-d206b3fd0414"),
-                    Credentials = credential,
-                };
-                await testSession.PostAsync<SessionController>(newSession)
-                    .AssertAsync(System.Net.HttpStatusCode.Created);
-            });
-        }
+        
     }
 }

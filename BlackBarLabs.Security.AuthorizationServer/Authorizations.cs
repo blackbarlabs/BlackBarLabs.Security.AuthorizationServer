@@ -23,6 +23,36 @@ namespace BlackBarLabs.Security.AuthorizationServer
         
         public delegate Task<CreateCredentialResult> CredentialProviderDelegate(CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri [] externalClaimsLocations);
 
+        public async Task<TResult> CreateAsync<TResult>(Guid authorizationId, Func<TResult> onSuccess, Func<TResult> onAlreadyExists)
+        {
+            var result = await this.dataContext.Authorizations.CreateAuthorizationAsync(authorizationId,
+                () => onSuccess(),
+                () => onAlreadyExists());
+            return result;
+        }
+
+        public async Task<TResult> CreateCredentialsAsync<TResult>(Guid authorizationId, 
+            CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri[] claimsProviders,
+            Func<TResult> success, Func<TResult> authenticationFailed,
+            Func<TResult> authorizationDoesNotExists,
+            Func<Guid, TResult> alreadyAssociated)
+        {
+            // ... validates the provider credentials before accepting / storing them.
+            var provider = this.context.GetCredentialProvider(method);
+            var result = await await provider.RedeemTokenAsync(providerId, username, token,
+                async (resultToken) =>
+                {
+                    return await this.dataContext.Authorizations.CreateCredentialProviderAsync(authorizationId,
+                        providerId, username, claimsProviders,
+                        () => success(),
+                        () => authorizationDoesNotExists(),
+                        (alreadyAssociatedAuthorizationId) => alreadyAssociated(alreadyAssociatedAuthorizationId));
+                },
+                () => Task.FromResult(authenticationFailed()),
+                () => Task.FromResult(default(TResult)));
+            return result;
+        }
+
         public delegate IEnumerable<Task<bool>> CreateCredentialProviderCallback(CredentialProviderDelegate callback);
         
         public delegate bool UpdateCredentialProviderCallback(
@@ -121,8 +151,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
 
             #endregion
         }
-
-
+        
         private IEnumerable<Task<CreateCredentialResult>> AuthenticateCredentialProviders(
             IEnumerable<Func<CredentialProviderDelegate, Task<CreateCredentialResult>>> credentialProviders,
             Persistence.CredentialProviderDelegate storeCredentialProvider)
@@ -134,46 +163,48 @@ namespace BlackBarLabs.Security.AuthorizationServer
                     // ... validates the provider credentials before accepting / storing them.
                     var provider = this.context.GetCredentialProvider(method);
 
-                    var accessToken = await provider.RedeemTokenAsync(providerId, username, token);
-                    if (default(string) == accessToken)
-                        return CreateCredentialResult.AuthenticationFailed(method, providerId, username);
-
-                    try
-                    {
-                        if (!await storeCredentialProvider(providerId, username, externalClaimsLocations))
+                    return await await provider.RedeemTokenAsync(providerId, username, token,
+                        async (accessToken) =>
                         {
-                            return await this.dataContext.Authorizations.FindAuthId(providerId, username,
-                                (storedAuthId, storedExternalClaimsLocations) => CreateCredentialResult.AlreadyAssociated(storedAuthId, method, providerId, username),
-                                () => CreateCredentialResult.FailedToSave("Data inconsistency"));
-                        }
-                    } catch(Exception ex)
-                    {
-                        return CreateCredentialResult.FailedToSave(ex.Message);
-                    }
-
-                    return CreateCredentialResult.Success();
+                            try
+                            {
+                                if (!await storeCredentialProvider(providerId, username, externalClaimsLocations))
+                                {
+                                    return await this.dataContext.Authorizations.FindAuthId(providerId, username,
+                                        (storedAuthId, storedExternalClaimsLocations) => CreateCredentialResult.AlreadyAssociated(storedAuthId, method, providerId, username),
+                                        () => CreateCredentialResult.FailedToSave("Data inconsistency"));
+                                }
+                                return CreateCredentialResult.Success();
+                            }
+                            catch (Exception ex)
+                            {
+                                return CreateCredentialResult.FailedToSave(ex.Message);
+                            }
+                        },
+                        () => Task.FromResult(CreateCredentialResult.AuthenticationFailed(method, providerId, username)),
+                        () => Task.FromResult(CreateCredentialResult.FailedToSave(string.Empty)));
                 }));
 
             return credentialValidations;
         }
-
-        public async Task<IEnumerable<CreateCredentialResult>> CreateCredentialsAsync(Guid authorizationId,
-            IEnumerable<Func<CredentialProviderDelegate, Task<CreateCredentialResult>>> credentialProviders)
-        {
-            IEnumerable<CreateCredentialResult> results = default(IEnumerable<CreateCredentialResult>);
-            // Persistence calls us back to create each credential provider
-            await this.dataContext.Authorizations.CreateAuthorizationAsync(
-                authorizationId,
-                (storeCredentialProvider) => AuthenticateCredentialProviders(credentialProviders, storeCredentialProvider),
-                (creationResults) =>
-                {
-                    results = creationResults;
-                    var firstFailedCredential = creationResults.FirstOrDefault((cs) => !cs.IsSuccess);
-                    var completeSuccess = firstFailedCredential == default(CreateCredentialResult);
-                    return completeSuccess;
-                });
-            return results;
-        }
+        
+        //public async Task<IEnumerable<CreateCredentialResult>> CreateCredentialsAsync(Guid authorizationId,
+        //    IEnumerable<Func<CredentialProviderDelegate, Task<CreateCredentialResult>>> credentialProviders)
+        //{
+        //    IEnumerable<CreateCredentialResult> results = default(IEnumerable<CreateCredentialResult>);
+        //    // Persistence calls us back to create each credential provider
+        //    await this.dataContext.Authorizations.CreateAuthorizationAsync(
+        //        authorizationId,
+        //        (storeCredentialProvider) => AuthenticateCredentialProviders(credentialProviders, storeCredentialProvider),
+        //        (creationResults) =>
+        //        {
+        //            results = creationResults;
+        //            var firstFailedCredential = creationResults.FirstOrDefault((cs) => !cs.IsSuccess);
+        //            var completeSuccess = firstFailedCredential == default(CreateCredentialResult);
+        //            return completeSuccess;
+        //        });
+        //    return results;
+        //}
 
         public Task<T> FindByCredentialAsync<T>(CredentialValidationMethodTypes method, Uri providerId, string username, string token)
         {

@@ -15,7 +15,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
         /// <param name="sessionId"></param>
         /// <param name="authIdFunc"></param>
         /// <returns></returns>
-        Task<T> UpdateAuthentication<T>(Guid sessionId, UpdateAuthenticationDelegate<T> authIdFunc);
+        Task<TResult> UpdateAuthentication<TResult>(Guid sessionId, UpdateAuthenticationDelegate<TResult> authIdFunc, Func<TResult> notFound);
 
         /// <summary>
         /// Check if sessionId is stored in the database

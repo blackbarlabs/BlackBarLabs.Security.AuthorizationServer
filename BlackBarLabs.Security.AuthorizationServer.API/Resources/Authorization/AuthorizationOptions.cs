@@ -12,34 +12,11 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
     {
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var credentialProviders = new CredentialsType[]
-            {
-                new CredentialsType
-                {
-                    Method = CredentialValidationMethodTypes.Facebook,
-                    Provider = new Uri("http://api.facebook.com/Authorization"),
-                    UserId = "0123456789",
-                    Token = "ABC.123.MXC",
-                },
-                new CredentialsType
-                {
-                    Method = CredentialValidationMethodTypes.OpenIdConnect,
-                    Provider = new Uri("urn:auth.gibbits.nc2media.com/AuthOpenIdConnect/"),
-                    UserId = Guid.NewGuid().ToString("N"),
-                    Token = "EDF.123.A3EF",
-                },
-                new CredentialsType
-                {
-                    Method = CredentialValidationMethodTypes.Implicit,
-                    Provider = new Uri("http://www.example.com/ImplicitAuth"),
-                    UserId = Guid.NewGuid().ToString("N"),
-                    Token = Guid.NewGuid().ToString("N"),
-                }
-            };
+            
             var viewModel = new Authorization
             {
                 Id = Guid.NewGuid(),
-                CredentialProviders = (credentialProviders),
+                CredentialProviders = new Uri[] { new Uri("http://example.com/Credentials?UserId=" + Guid.NewGuid().ToString()) },
             };
             var response = new BlackBarLabs.Api.Resources.Options()
             {

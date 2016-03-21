@@ -23,30 +23,27 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return session;
         }
 
-        public static async Task<Resources.Session> CreateSessionWithCredentialsAsync(this TestSession testSession)
+        public static async Task<Resources.Session> CreateSessionWithCredentialsAsync(this TestSession testSession,
+            ICredential credentials = default(ICredential))
         {
             var auth = await testSession.CreateAuthorizationAsync();
-
+            if(default(ICredential) == credentials)
+                credentials = await testSession.CreateCredentialVoucherAsync(auth.Id);
             var sessionId = Guid.NewGuid();
             var session = new Resources.SessionPost()
             {
                 Id = sessionId,
                 AuthorizationId = auth.Id,
-                Credentials = new CredentialsType()
-                {
-                    Method = CredentialValidationMethodTypes.Facebook,
-                    Provider = new Uri("http://api.facebook.com"),
-                    Token = auth.CredentialProviders[0].Token,
-                    UserId = auth.CredentialProviders[0].UserId,
-                },
+                Credentials = credentials,
             };
             var createSessionResponse = await testSession.PostAsync<SessionController>(session);
             createSessionResponse.Assert(HttpStatusCode.Created);
-            return session;
+            var responseSession = createSessionResponse.GetContent<Resources.Session>();
+            return responseSession;
         }
 
         public static async Task<HttpResponseMessage> AuthenticateSession(this TestSession testSession,
-            Guid sessionId, CredentialsType credential)
+            Guid sessionId, ICredential credential)
         {
             var session = new Resources.SessionPut()
             {

@@ -27,20 +27,43 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 await testSession.CreateSessionWithCredentialsAsync();
             });
         }
-        
+
+        [TestMethod]
         public async Task InvalidCredentials()
         {
             await TestSession.StartAsync(async (testSession) =>
             {
-                var session = await testSession.CreateSessionWithCredentialsAsync();
                 var auth = await testSession.CreateAuthorizationAsync();
-                session.AuthorizationId = auth.Id;
-                session.Credentials = auth.CredentialProviders[0];
+                var wrongCredential = await testSession.CreateCredentialImplicitAsync(auth.Id);
+                wrongCredential.Token = Guid.NewGuid().ToString("N");
+                var sessionWithWrongCredential = new Resources.SessionPost
+                {
+                    Id = Guid.NewGuid(),
+                    Credentials = wrongCredential,
+                };
 
-                // Make credential invalid
-                session.Credentials.Token = Guid.NewGuid().ToString("N");
-                
-                var authenticateSessionResponse = await testSession.PutAsync<SessionController>(session);
+                var authenticateSessionResponse = await testSession.PostAsync<SessionController>(sessionWithWrongCredential);
+                authenticateSessionResponse.Assert(HttpStatusCode.Conflict);
+            });
+        }
+
+        [TestMethod]
+        public async Task Example()
+        {
+            await TestSession.StartAsync(async (testSession) =>
+            {
+                var session = new Resources.SessionPost()
+                {
+                    Id = Guid.NewGuid(),
+                    Credentials = new Resources.Credential()
+                    {
+                            Method = Authorization.CredentialValidationMethodTypes.Implicit,
+                            Provider = new Uri("http://orderowl.com/api/Auth"),
+                            UserId = "butthead",
+                            Token = "Password#1",
+                    },
+                };
+                var authenticateSessionResponse = await testSession.PostAsync<SessionController>(session);
                 authenticateSessionResponse.Assert(HttpStatusCode.Conflict);
             });
         }

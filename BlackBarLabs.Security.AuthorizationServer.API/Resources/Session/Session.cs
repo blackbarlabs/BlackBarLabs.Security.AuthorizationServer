@@ -23,7 +23,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
         public AuthHeaderProps SessionHeader { get; set; }
 
         [DataMember]
-        public CredentialsType Credentials { get; set; }
+        public ICredential Credentials { get; set; }
 
         [DataMember]
         public string RefreshToken { get; set; }
@@ -32,9 +32,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 
         protected bool IsCredentialsPopulated()
         {
-            if (default(CredentialsType) == Credentials)
+            if (default(Resources.Credential) == Credentials)
                 return false;
-            return this.Credentials.IsPopulated();
+            return
+                (this.Credentials.Provider != default(Uri)) &&
+                (!String.IsNullOrWhiteSpace(this.Credentials.UserId)) &&
+                (!String.IsNullOrWhiteSpace(this.Credentials.Token));
         }
     }
 }

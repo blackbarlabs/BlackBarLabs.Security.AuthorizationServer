@@ -131,9 +131,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Helpers\CredentialHelpers.cs" />
     <Compile Include="Helpers\AuthorizationHelpers.cs" />
     <Compile Include="Helpers\SessionHelpers.cs" />
     <Compile Include="RolesTest.cs" />
+    <Compile Include="CredentialTests.cs" />
     <Compile Include="WorkflowTests.cs" />
     <Compile Include="AuthorizationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

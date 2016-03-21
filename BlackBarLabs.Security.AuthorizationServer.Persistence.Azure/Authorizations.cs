@@ -51,6 +51,19 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
             return false;
         }
         
+        public async Task<T> CreateAuthorizationAsync<T>(Guid authorizationId, Func<T> onSuccess, Func<T> onAlreadyExist)
+        {
+            var authorizationDocument = new Documents.AuthorizationDocument()
+            {
+                RowKey = authorizationId.AsRowKey(),
+                PartitionKey = authorizationId.AsRowKey().GeneratePartitionKey(),
+            };
+
+            return await repository.CreateAsync(authorizationId, authorizationDocument,
+                () => onSuccess(),
+                () => onAlreadyExist());
+        }
+
         public async Task<bool> CreateAuthorizationAsync<T>(Guid authorizationId,
             Func<CredentialProviderDelegate, IEnumerable<Task<T>>> createCredentialProviderDelegateCallback,
             Func<IEnumerable<T>, bool> validateResultsCallback)
@@ -125,5 +138,31 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
 
             return new Guid(data);
         }
+
+        public async Task<TResult> CreateCredentialProviderAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,
+            Func<TResult> success, Func<TResult> authorizationDoesNotExists, Func<Guid, TResult> alreadyAssociated)
+        {
+            return await await repository.FindByIdAsync(authorizationId,
+                async (Documents.AuthorizationDocument authorizationStored) =>
+                {
+                    var authorizationCheckId = GetRowKey(providerId, username);
+                    var authorizationDocument = new Documents.AuthorizationCheck
+                    {
+                        AuthId = authorizationId,
+                    };
+                    return await await await repository.CreateAsync(authorizationCheckId, authorizationDocument,
+                        () => Task.FromResult(Task.FromResult(success())),
+                        () =>
+                        {
+                            return repository.FindByIdAsync(authorizationCheckId,
+                                (Documents.AuthorizationCheck authorizationCheckDocument) =>
+                                    Task.FromResult(alreadyAssociated(authorizationCheckDocument.AuthId)),
+                                () => CreateCredentialProviderAsync(authorizationId, providerId, username, claimsProviders,
+                                        success, authorizationDoesNotExists, alreadyAssociated));
+                        });
+                },
+                () => Task.FromResult(authorizationDoesNotExists()));
+        }
+        
     }
 }

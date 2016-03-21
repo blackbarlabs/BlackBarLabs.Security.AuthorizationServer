@@ -14,7 +14,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
         public Guid Id { get; set; }
 
         [DataMember]
-        public CredentialsType[] CredentialProviders { get; set; }
+        public Uri[] CredentialProviders { get; set; }
 
         #endregion
         

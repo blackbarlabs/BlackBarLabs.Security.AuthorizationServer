@@ -14,9 +14,13 @@ namespace BlackBarLabs.Security.CredentialProvider.Doubles.Stubs
             this.modifierDelegate = modifierDelegate;
         }
 
-        public Task<string> RedeemTokenAsync(Uri providerId, string username, string token)
+        public async Task<TResult> RedeemTokenAsync<TResult>(Uri providerId, string username, string token,
+            Func<string, TResult> success, Func<TResult> invalidCredentials, Func<TResult> couldNotConnect)
         {
-            return modifierDelegate.Invoke(providerId, username, token);
+            var result = await modifierDelegate.Invoke(providerId, username, token);
+            if (default(string) == result)
+                return invalidCredentials();
+            return success(result);
         }
     }
 }
