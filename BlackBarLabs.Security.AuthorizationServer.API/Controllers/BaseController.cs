@@ -59,6 +59,17 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
                 });
             return context;
         }
+
+        protected override void Initialize(System.Web.Http.Controllers.HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+
+            Func<AuthorizationClient.IContext> fetchAuthorizationClient =
+                () => new AuthorizationClient.Context();
+            controllerContext.Request.Properties.Add(
+                BlackBarLabs.Security.AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient,
+                fetchAuthorizationClient);
+        }
     }
 
     [Serializable]

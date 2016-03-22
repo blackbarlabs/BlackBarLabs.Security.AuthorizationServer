@@ -63,6 +63,10 @@
       <Project>{c7d886bb-2da8-47ef-9136-1cb13b44d2d7}</Project>
       <Name>BlackBarLabs.Persistence</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BlackBarLabs.Security.AuthorizationClient\BlackBarLabs.Security.AuthorizationClient.csproj">
+      <Project>{84cfd0a9-6923-4a9d-9062-d7d088acf748}</Project>
+      <Name>BlackBarLabs.Security.AuthorizationClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BlackBarLabs.Security.Authorization\BlackBarLabs.Security.Authorization.csproj">
       <Project>{6e009bb4-a644-43a5-95c7-0a3918f61b04}</Project>
       <Name>BlackBarLabs.Security.Authorization</Name>

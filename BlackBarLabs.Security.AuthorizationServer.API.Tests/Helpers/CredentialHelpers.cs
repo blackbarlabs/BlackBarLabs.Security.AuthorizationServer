@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -54,7 +52,8 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         }
 
         public static async Task<Resources.Credential> CreateCredentialImplicitAsync(this TestSession testSession,
-            Guid authId, string username = default(string), string password = default(string))
+            Guid authId, string username = default(string), string password = default(string),
+            Uri [] claimsProviders = default(Uri[]))
         {
             if (default(string) == username)
                 username = Guid.NewGuid().ToString("N");
@@ -69,6 +68,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 Provider = trustedVoucherProverId,
                 UserId = username,
                 Token = password,
+                ClaimsProviders = claimsProviders,
             };
             await testSession.PostAsync<CredentialController>(credentialImplicit)
                 .AssertAsync(HttpStatusCode.Created);

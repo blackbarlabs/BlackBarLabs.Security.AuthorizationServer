@@ -400,6 +400,10 @@
       <Project>{a228d9d3-91c9-48cb-9498-8e7b39f10ffe}</Project>
       <Name>BlackBarLabs.Persistence.Azure</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BlackBarLabs.Security.AuthorizationClient\BlackBarLabs.Security.AuthorizationClient.csproj">
+      <Project>{84cfd0a9-6923-4a9d-9062-d7d088acf748}</Project>
+      <Name>BlackBarLabs.Security.AuthorizationClient</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BlackBarLabs.Security.AuthorizationServer.Persistence.Azure\BlackBarLabs.Security.AuthorizationServer.Persistence.Azure.csproj">
       <Project>{068b417b-4c83-465f-b623-2801848c77d9}</Project>
       <Name>BlackBarLabs.Security.AuthorizationServer.Persistence.Azure</Name>

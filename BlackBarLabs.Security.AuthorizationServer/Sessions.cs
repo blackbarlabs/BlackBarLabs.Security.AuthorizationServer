@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 
 using BlackBarLabs.Core.Web;
+using BlackBarLabs.Collections.Generic;
 
 namespace BlackBarLabs.Security.AuthorizationServer
 {
@@ -25,7 +26,8 @@ namespace BlackBarLabs.Security.AuthorizationServer
 
         public delegate T CreateSessionSuccessDelegate<T>(Guid authorizationId, string token, string refreshToken);
         public delegate T CreateSessionAlreadyExistsDelegate<T>();
-        public async Task<T> CreateSessionAsync<T>(Guid sessionId,
+        public async Task<T> CreateAsync<T>(Guid sessionId,
+            AuthorizationClient.IContext authClient,
             CreateSessionSuccessDelegate<T> onSuccess,
             CreateSessionAlreadyExistsDelegate<T> alreadyExists)
         {
@@ -34,7 +36,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
             try
             {
                 await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken);
-                var jwtToken = await this.GenerateToken(sessionId);
+                var jwtToken = await this.GenerateToken(sessionId, default(Guid), default(Uri[]), authClient);
                 return onSuccess.Invoke(default(Guid), jwtToken, refreshToken);
             } catch(BlackBarLabs.Persistence.ResourceAlreadyExistsException)
             {
@@ -42,12 +44,14 @@ namespace BlackBarLabs.Security.AuthorizationServer
             }
         }
 
-        public async Task<T> CreateSessionAsync<T>(Guid sessionId,
+        public async Task<T> CreateAsync<T>(Guid sessionId,
             CredentialValidationMethodTypes method, Uri providerId, string username, string token,
-            CreateSessionSuccessDelegate<T> onSuccess, CreateSessionAlreadyExistsDelegate<T> alreadyExists,
+            AuthorizationClient.IContext authClient,
+            CreateSessionSuccessDelegate<T> onSuccess,
+            CreateSessionAlreadyExistsDelegate<T> alreadyExists,
             Func<string, T> invalidCredentials)
         {
-            var result = await await AuthenticateAsync(method, providerId, username, token,
+            var result = await await AuthenticateCredentialsAsync(method, providerId, username, token,
                 async (authorizationId, externalClaimsLocations) =>
                 {
                     var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
@@ -55,7 +59,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                     {
                         await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId); // AuthorizationId may not need to be stored
 
-                        var jwtToken = await GenerateToken(sessionId, authorizationId, externalClaimsLocations);
+                        var jwtToken = await GenerateToken(sessionId, authorizationId, externalClaimsLocations, authClient);
                         return onSuccess(authorizationId, jwtToken, refreshToken);
                     }
                     catch (BlackBarLabs.Persistence.ResourceAlreadyExistsException)
@@ -74,12 +78,13 @@ namespace BlackBarLabs.Security.AuthorizationServer
         public delegate T AuthenticateNotFoundDelegate<T>();
         public async Task<T> AuthenticateAsync<T>(Guid sessionId,
             CredentialValidationMethodTypes credentialValidationMethod, Uri credentialsProviderId, string username, string token,
+            AuthorizationClient.IContext authClient,
             AuthenticateSuccessDelegate<T> onSuccess,
             AuthenticateInvalidCredentialsDelegate<T> onInvalidCredentials,
             AuthenticateAlreadyAuthenticatedDelegate<T> onAlreadyAuthenticated,
             AuthenticateNotFoundDelegate<T> onNotFound)
         {
-            var result = await await AuthenticateAsync(credentialValidationMethod, credentialsProviderId, username, token,
+            var result = await await AuthenticateCredentialsAsync(credentialValidationMethod, credentialsProviderId, username, token,
                 async (authorizationId, externalClaimsLocations) =>
                 {
                     var updateAuthResult = await await this.dataContext.Sessions.UpdateAuthentication(sessionId,
@@ -89,7 +94,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                                 return onAlreadyAuthenticated();
 
                             saveAuthId(authorizationId);
-                            var jwtToken = await GenerateToken(sessionId, authorizationId);
+                            var jwtToken = await GenerateToken(sessionId, authorizationId, externalClaimsLocations, authClient);
                             return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
                         },
                         () => Task.FromResult(onNotFound()));
@@ -100,7 +105,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
             return result;
         }
 
-        private async Task<T> AuthenticateAsync<T>(
+        private async Task<T> AuthenticateCredentialsAsync<T>(
             CredentialValidationMethodTypes method, Uri providerId, string username, string token,
             Func<Guid, Uri [], T> onSuccess, Func<T> onAuthIdNotFound, Func<T> onInvalidCredential)
         {
@@ -124,76 +129,61 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 () => { throw new Exception("Could not connect to auth system"); });
         }
 
-        private async Task<string> GenerateToken(Guid sessionId, Guid authorizationId = default(Guid), Uri [] credentialProviders = default(Uri[]))
+        private async Task<string> GenerateToken(Guid sessionId, Guid authorizationId, Uri [] credentialProviders,
+            AuthorizationClient.IContext authClient)
         {
             var tokenExpirationInMinutesConfig = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationServer.tokenExpirationInMinutes"];
             if (string.IsNullOrEmpty(tokenExpirationInMinutesConfig))
                 throw new SystemException("TokenExpirationInMinutes was not found in the configuration file");
             var tokenExpirationInMinutes = Double.Parse(tokenExpirationInMinutesConfig);
 
-            if (default(Uri[]) == credentialProviders)
-            {
-                return Security.Tokens.JwtTools.CreateToken(
-                    sessionId, authorizationId, tokenExpirationInMinutes,
-                    "AuthServer.issuer", "AuthServer.key");
-            }
+            var claims = await GetClaimsAsync(sessionId, authorizationId, credentialProviders, authClient);
 
-            var claims = (IEnumerable<Claim>)new[] {
-                new Claim(ClaimIds.Session, sessionId.ToString()),
-                new Claim(ClaimIds.Authorization, authorizationId.ToString()) };
-
-            var providedClaimsTasks = credentialProviders.Select(async (credentialProvider) =>
-                {
-                    var httpWebRequest = WebRequest.Create(credentialProvider);
-                    return await httpWebRequest.GetAsync(
-                        (BBLClaim[] returnedClaims) =>
-                        {
-                            return returnedClaims.Select((fetchedClaim) =>
-                             {
-                                 return new Claim(fetchedClaim.Type.AbsoluteUri, fetchedClaim.Value);
-                             });
-                        },
-                        //(code, message) => default(IEnumerable<Claim>));
-                        (code, message) => new Claim[] { new Claim(credentialProvider.AbsoluteUri, code.ToString() + message) });
-                });
-            var providedClaimss = await Task.WhenAll(providedClaimsTasks);
-            var providedUniqueClaimValues = new Dictionary<string, string>();
-            foreach(var providedClaims in providedClaimss)
-            {
-                if (default(IEnumerable<Claim>) == providedClaims)
-                    continue;
-                foreach(var providedClaim in providedClaims)
-                {
-                    if (providedUniqueClaimValues.ContainsKey(providedClaim.Type))
-                        continue;
-                    providedUniqueClaimValues.Add(providedClaim.Type, providedClaim.Value);
-                }
-            }
-            var serverProvidedClaims = providedUniqueClaimValues.Select(kvp =>
-                new Claim(kvp.Key, kvp.Value));
-            
             var jwtToken = Security.Tokens.JwtTools.CreateToken(
                 sessionId.ToString(), DateTimeOffset.UtcNow, 
                 DateTimeOffset.UtcNow + TimeSpan.FromMinutes(tokenExpirationInMinutes),
-                claims.Concat(serverProvidedClaims),
+                claims,
                 "AuthServer.issuer", "AuthServer.key");
 
             return jwtToken;
         }
 
-        private class BBLClaim : IClaim
+        private async Task<IEnumerable<Claim>> GetClaimsAsync(Guid sessionId, Guid authorizationId, Uri[] credentialProviders,
+            AuthorizationClient.IContext authClient)
         {
-            public string Issuer { get; set; }
+            var claims = (IEnumerable<Claim>)new[] {
+                new Claim(ClaimIds.Session, sessionId.ToString()),
+                new Claim(ClaimIds.Authorization, authorizationId.ToString()) };
 
-            public string OriginalIssuer { get; set; }
+            if (default(Uri[]) == credentialProviders || credentialProviders.Length == 0)
+            {
+                return claims;
+            }
 
-            public IDictionary<string, string> Properties { get; set; }
+            var externalProvidedClaims = await GetClaimsExternalAsync(credentialProviders, authClient);
+            return claims.Concat(externalProvidedClaims);
+        }
 
-            public Uri Type { get; set; }
+        private async Task<IEnumerable<Claim>> GetClaimsExternalAsync(Uri[] credentialProviders,
+            AuthorizationClient.IContext authClient)
+        {
+            var providedClaimsTasks = credentialProviders.Select(async (credentialProvider) =>
+            {
+                return await authClient.ClaimsGetAsync(credentialProvider,
+                    (IClaim[] returnedClaims) => returnedClaims.Select((fetchedClaim) =>
+                    {
+                        return new Claim(fetchedClaim.Type.AbsoluteUri, fetchedClaim.Value);
+                    }),
+                    (code, message) => new Claim[] { new Claim(credentialProvider.AbsoluteUri, code.ToString() + message) });
+            });
+            var providedClaimss = await Task.WhenAll(providedClaimsTasks);
+            var externalProvidedClaims = providedClaimss
+                .Where(claims => default(IEnumerable<Claim>) != claims)
+                .SelectMany()
+                .Distinct(JoshCodes.Core.Equality<Claim>.CreateComparer(claim => claim.Type))
+                .Select(claim => new Claim(claim.Type, claim.Value));
 
-            public string Value { get; set; }
-
-            public string ValueType { get; set; }
+            return externalProvidedClaims;
         }
     }
 }

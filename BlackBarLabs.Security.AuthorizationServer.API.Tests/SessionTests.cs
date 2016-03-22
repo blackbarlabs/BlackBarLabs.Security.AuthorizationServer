@@ -15,6 +15,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
+                var authClient = new AuthorizationClient.MockContext();
+                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
+
                 await testSession.CreateSessionAsync();
             });
         }
@@ -24,6 +27,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
+                var authClient = new AuthorizationClient.MockContext();
+                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
+
                 await testSession.CreateSessionWithCredentialsAsync();
             });
         }
@@ -33,6 +39,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
+                var authClient = new AuthorizationClient.MockContext();
+                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
+
                 var auth = await testSession.CreateAuthorizationAsync();
                 var wrongCredential = await testSession.CreateCredentialImplicitAsync(auth.Id);
                 wrongCredential.Token = Guid.NewGuid().ToString("N");
@@ -52,6 +61,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
         {
             await TestSession.StartAsync(async (testSession) =>
             {
+                var authClient = new AuthorizationClient.MockContext();
+                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
+
                 var session = new Resources.SessionPost()
                 {
                     Id = Guid.NewGuid(),

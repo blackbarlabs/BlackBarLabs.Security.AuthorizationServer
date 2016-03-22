@@ -19,7 +19,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
         
         public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var foo = new Authorizations.CreateCredentialResult();
             var creationResults = await Context.Authorizations.CreateCredentialsAsync(AuthorizationId,
                 this.Method, this.Provider, this.UserId, this.Token, this.ClaimsProviders,
                 () => Request.CreateResponse(HttpStatusCode.Created, this),

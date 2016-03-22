@@ -34,13 +34,15 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 return this.Request.CreateErrorResponse(HttpStatusCode.Conflict, this.PreconditionViewModelEntityAlreadyExists());
             };
 
+            var authClient = this.AuthorizationClientContext;
             if (!this.IsCredentialsPopulated())
             {
-                return await this.Context.Sessions.CreateSessionAsync(Id, createSessionCallback, alreadyExistsCallback);
+                return await this.Context.Sessions.CreateAsync(Id, authClient, createSessionCallback, alreadyExistsCallback);
             }
 
-            return await this.Context.Sessions.CreateSessionAsync(Id,
+            return await this.Context.Sessions.CreateAsync(Id,
                 this.Credentials.Method, this.Credentials.Provider, this.Credentials.UserId, this.Credentials.Token,
+                authClient,
                 createSessionCallback, alreadyExistsCallback,
                 (message) =>
                 {

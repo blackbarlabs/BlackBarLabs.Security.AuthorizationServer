@@ -1,6 +1,7 @@
 ﻿using BlackBarLabs.Security.Authorization;
 using BlackBarLabs.Security.AuthorizationServer.Persistence.Azure;
 using BlackBarLabs.Security.CredentialProvider.ImplicitCreation;
+using System;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 {
@@ -45,6 +46,22 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                     return new CredentialProvider.OpenIdConnect.OpenIdConnectCredentialProvider();
                 });
             return context;
+        }
+
+        private AuthorizationClient.IContext authorizationClientContext;
+        protected AuthorizationClient.IContext AuthorizationClientContext
+        {
+            get
+            {
+                if (default(Context) == authorizationClientContext)
+                {
+                    var getAuthorizationClientContext = (Func<AuthorizationClient.IContext>)
+                        this.Request.Properties[AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient];
+                    this.authorizationClientContext = getAuthorizationClientContext();
+                }
+
+                return authorizationClientContext;
+            }
         }
     }
 }

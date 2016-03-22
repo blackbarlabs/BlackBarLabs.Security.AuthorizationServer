@@ -34,7 +34,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             {
                 Id = sessionId,
                 AuthorizationId = auth.Id,
-                Credentials = credentials,
+                Credentials = (Resources.Credential)credentials,
             };
             var createSessionResponse = await testSession.PostAsync<SessionController>(session);
             createSessionResponse.Assert(HttpStatusCode.Created);
@@ -48,7 +48,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             var session = new Resources.SessionPut()
             {
                 Id = sessionId,
-                Credentials = credential,
+                Credentials = (Resources.Credential)credential,
             };
             var authenticateSessionResponse = await testSession.PutAsync<SessionController>(session);
             return authenticateSessionResponse;

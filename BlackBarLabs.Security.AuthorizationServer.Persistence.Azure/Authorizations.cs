@@ -150,6 +150,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
                     {
                         AuthId = authorizationId,
                     };
+                    authorizationDocument.SetExternalClaimsLocations(claimsProviders);
                     return await await await repository.CreateAsync(authorizationCheckId, authorizationDocument,
                         () => Task.FromResult(Task.FromResult(success())),
                         () =>

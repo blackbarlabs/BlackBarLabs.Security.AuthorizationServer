@@ -22,12 +22,36 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
         [DataMember]
         public AuthHeaderProps SessionHeader { get; set; }
 
+        [IgnoreDataMember]
+        private Resources.Credential credentials;
+
         [DataMember]
-        public ICredential Credentials { get; set; }
+        public Resources.Credential Credentials
+        {
+            get { return this.credentials; }
+            set { this.credentials = value; }
+        }
+
+        ICredential ISession.Credentials
+        {
+            get { return this.credentials; }
+            set
+            {
+                this.credentials = new Credential()
+                {
+                    AuthorizationId = value.AuthorizationId,
+                    ClaimsProviders = value.ClaimsProviders,
+                    Method = value.Method,
+                    Provider = value.Provider,
+                    Token = value.Token,
+                    UserId = value.UserId,
+                };
+            }
+        }
 
         [DataMember]
         public string RefreshToken { get; set; }
-
+        
         #endregion
 
         protected bool IsCredentialsPopulated()
