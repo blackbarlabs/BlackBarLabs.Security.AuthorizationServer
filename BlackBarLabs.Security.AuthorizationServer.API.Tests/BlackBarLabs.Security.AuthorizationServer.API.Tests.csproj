@@ -136,15 +136,16 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Helpers\ClaimHelpers.cs" />
     <Compile Include="Helpers\CredentialHelpers.cs" />
     <Compile Include="Helpers\AuthorizationHelpers.cs" />
     <Compile Include="Helpers\SessionHelpers.cs" />
-    <Compile Include="RolesTest.cs" />
-    <Compile Include="CredentialTests.cs" />
+    <Compile Include="Tests\ClaimsTest.cs" />
+    <Compile Include="Tests\CredentialTests.cs" />
     <Compile Include="WorkflowTests.cs" />
-    <Compile Include="AuthorizationTests.cs" />
+    <Compile Include="Tests\AuthorizationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SessionTests.cs" />
+    <Compile Include="Tests\SessionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BlackBarLabs.Api\BlackBarLabs.Api.Tests\BlackBarLabs.Api.Tests.csproj">

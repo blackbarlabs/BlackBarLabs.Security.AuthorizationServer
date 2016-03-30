@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BlackBarLabs.Persistence;
 using BlackBarLabs.Persistence.Azure;
 using BlackBarLabs.Persistence.Azure.StorageTables;
+using BlackBarLabs.Collections.Async;
 
 namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
 {
@@ -31,12 +32,25 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
         }
 
         public async Task<T> FindAuthId<T>(Uri providerId, string username,
-            Func<Guid, Uri[], T> onSuccess, Func<T> onFailure)
+            Func<Guid, IEnumerableAsync<ClaimDelegate>, T> onSuccess, Func<T> onFailure)
         {
             var authCheckId = GetRowKey(providerId, username);
-            var result = await repository.FindByIdAsync(authCheckId,
-                (Documents.AuthorizationCheck document) => onSuccess(document.AuthId, document.GetExternalClaimsLocations()),
-                () => onFailure());
+            var result = await await repository.FindByIdAsync(authCheckId,
+                async (Documents.AuthorizationCheck document) =>
+                {
+                    return await repository.FindByIdAsync(document.AuthId,
+                        (Documents.AuthorizationDocument authorizationDocument) =>
+                        {
+                            var claims = authorizationDocument.GetClaims(repository);
+                            return onSuccess(document.AuthId, claims);
+                        },
+                        () =>
+                        {
+                            // TODO: Log data inconsistency exception
+                            return onFailure();
+                        });
+                },
+                () => Task.FromResult(onFailure()));
             return result;
         }
 
@@ -164,6 +178,38 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
                 },
                 () => Task.FromResult(authorizationDoesNotExists()));
         }
-        
+
+        public async Task<TResult> UpdateClaims<TResult>(Guid authorizationId,
+            UpdateClaimsSuccessDelegate<TResult> onSuccess,
+            Func<TResult> notFound,
+            Func<string, TResult> failure)
+        {
+            return await repository.UpdateAsync<Documents.AuthorizationDocument, TResult>(authorizationId,
+                async (authorizationDocument, save) =>
+                {
+                    var claims = authorizationDocument.GetClaims(repository);
+                    var claimsDocs = new List<Documents.ClaimDocument>();
+                    var result = onSuccess(claims,
+                        (claimId, issuer, type, value) =>
+                        {
+                            claimsDocs.Add(new Documents.ClaimDocument()
+                            {
+                                ClaimId = claimId,
+                                Issuer = issuer.AbsoluteUri,
+                                Type = type.AbsoluteUri,
+                                Value = value,
+                            });
+                        });
+
+                    var guids = await authorizationDocument.AddClaimsAsync(claimsDocs, repository);
+                    if(guids.Count() > 0)
+                    {
+                        authorizationDocument.Claims = guids.ToByteArrayOfGuids();
+                        await save(authorizationDocument);
+                    }
+                    return result;
+                },
+                () => notFound());
+        }
     }
 }

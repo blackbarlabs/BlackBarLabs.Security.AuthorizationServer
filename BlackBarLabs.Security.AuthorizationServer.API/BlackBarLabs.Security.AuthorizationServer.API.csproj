@@ -271,6 +271,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Controllers\CredentialController.cs" />
     <Compile Include="Controllers\ContentNegotiationController.cs" />
+    <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\SessionController.cs" />
     <Compile Include="Controllers\AuthorizationController.cs">
       <SubType>Code</SubType>
@@ -293,6 +294,8 @@
     <Compile Include="Resources\Authorization\AuthorizationGet.cs" />
     <Compile Include="Resources\Authorization\AuthorizationOptions.cs" />
     <Compile Include="Resources\Authorization\AuthorizationPost.cs" />
+    <Compile Include="Resources\Claim\Claim.cs" />
+    <Compile Include="Resources\Claim\ClaimPost.cs" />
     <Compile Include="Resources\Credential\CredentialOptions.cs" />
     <Compile Include="Resources\Credential\CredentialDelete.cs" />
     <Compile Include="Resources\Credential\CredentialPost.cs" />
@@ -345,6 +348,7 @@
     <None Include="Properties\PublishProfiles\gibbit-authentication-stg - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\humagelorderowl-authentication-dev - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\humagelorderowl-authentication-dev - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\humagelorderowl-authentication-test - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

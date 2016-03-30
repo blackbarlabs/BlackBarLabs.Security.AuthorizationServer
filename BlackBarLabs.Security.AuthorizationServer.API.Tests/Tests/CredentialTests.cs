@@ -8,6 +8,7 @@ using BlackBarLabs.Security.Authorization;
 using BlackBarLabs.Security.CredentialProvider.Facebook.Tests;
 using System.IdentityModel.Tokens;
 using System.Linq;
+using BlackBarLabs.Web;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
@@ -56,19 +57,16 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 var cred = await testSession.CreateCredentialImplicitAsync(auth.Id, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), 
                     new Uri[] { new Uri("http://example.com/1234") });
 
-                var exampleClaimType = new Uri("http://example.com/authorization/test/1234");
-                var exampleClaimValue = "foobar";
-                var authClient = new AuthorizationClient.MockContext();
-                authClient.AddClaim(exampleClaimType, exampleClaimValue);
-                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
-
+                var type = "http://example.com/authorization/test/1234";
+                var value = "foobar";
+                await testSession.ClaimPostAsync(auth.Id, type, value);
+                
                 var sessionWithClaims = await testSession.CreateSessionWithCredentialsAsync(cred);
-                var jwt = sessionWithClaims.SessionHeader.Value;
-
-                var securityClientJwt = new JwtSecurityToken(jwt);
-                var exampleClaim = securityClientJwt.Claims
-                    .First(claim => String.Compare(claim.Type, exampleClaimType.AbsoluteUri) == 0);
-                Assert.AreEqual(exampleClaimValue, exampleClaimValue);
+                var jwtClaims = sessionWithClaims.SessionHeader.Value.GetClaimsJwtString();
+                
+                var exampleClaim = jwtClaims
+                    .First(claim => String.Compare(claim.Type, type) == 0);
+                Assert.AreEqual(value, exampleClaim.Value);
             });
         }
     }

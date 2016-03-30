@@ -54,17 +54,18 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
         }
 
         public async Task<TResult> UpdateAuthentication<TResult>(Guid sessionId,
-            UpdateAuthenticationDelegate<TResult> authIdFunc,
+            UpdateAuthenticationDelegate<TResult> found,
             Func<TResult> notFound)
         {
             var result = await repository.UpdateAsync<Documents.SessionDocument, TResult>(sessionId,
-                (sessionDoc, onSave) =>
+                async (sessionDoc, onSave) =>
                 {
-                    return authIdFunc.Invoke(sessionDoc.AuthorizationId, (updatedAuthId) =>
-                    {
-                        sessionDoc.AuthorizationId = updatedAuthId;
-                        onSave(sessionDoc);
-                    });
+                    return await found(sessionDoc.AuthorizationId,
+                        async (updatedAuthId) =>
+                        {
+                            sessionDoc.AuthorizationId = updatedAuthId;
+                            await onSave(sessionDoc);
+                        });
                 },
                 () => notFound());
             return result;

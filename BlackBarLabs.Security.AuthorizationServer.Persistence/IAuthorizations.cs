@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlackBarLabs.Collections.Async;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,6 +7,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
 {
     public delegate Task<bool> CredentialProviderDelegate(Uri providerId, string username, Uri [] externalClaimsLocations);
     public delegate Task<bool> ShouldCreateCallback();
+    public delegate Task ClaimDelegate(Guid claimId, Uri issuer, Uri type, string value);
+    public delegate void SaveClaimDelegate(Guid claimId, Uri issuer, Uri type, string value);
+    public delegate TResult UpdateClaimsSuccessDelegate<TResult>(IEnumerableAsync<ClaimDelegate> claims, SaveClaimDelegate addClaim);
 
     public interface IAuthorizations
     {
@@ -24,7 +28,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
         /// <param name="providerId"></param>
         /// <param name="userId"></param>
         Task<T> FindAuthId<T>(Uri providerId, string username,
-            Func<Guid, Uri[], T> onSuccess, Func<T> onFailure);
+            Func<Guid, IEnumerableAsync<ClaimDelegate>, T> onSuccess, Func<T> onFailure);
+
+        Task<TResult> UpdateClaims<TResult>(Guid authorizationId,
+            UpdateClaimsSuccessDelegate<TResult> onSuccess,
+            Func<TResult> notFound,
+            Func<string, TResult> failure);
 
         Task<TResult> CreateCredentialProviderAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,
             Func<TResult> success, Func<TResult> authorizationDoesNotExists, Func<Guid, TResult> alreadyAssociated);

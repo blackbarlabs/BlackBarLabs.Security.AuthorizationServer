@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Exceptions\CredentialAlreadyExistsException.cs" />
     <Compile Include="Exceptions\InvalidCredentialsException.cs" />
+    <Compile Include="Claims.cs" />
     <Compile Include="Sessions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Context.cs" />

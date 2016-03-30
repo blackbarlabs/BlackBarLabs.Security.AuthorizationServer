@@ -62,6 +62,17 @@ namespace BlackBarLabs.Security.AuthorizationServer
             }
         }
 
+        private Claims claims;
+        public Claims Claims
+        {
+            get
+            {
+                if (default(Claims) == claims)
+                    claims = new Claims(this, this.DataContext);
+                return claims;
+            }
+        }
+
         #region Authorizations
 
         public delegate bool GetCredentialDelegate(CredentialValidationMethodTypes validationMethod, Uri provider, string userId, string userToken);

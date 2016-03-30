@@ -24,29 +24,27 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
             Sessions.CreateSessionSuccessDelegate<HttpResponseMessage> createSessionCallback = (authorizationId, token, refreshToken) =>
             {
                 responseSession.AuthorizationId = authorizationId;
-                responseSession.SessionHeader = new AuthHeaderProps { Name = "Authorization", Value = token };
+                responseSession.SessionHeader = new AuthHeaderProps { Name = "Authorization", Value = "Bearer " + token };
                 responseSession.RefreshToken = refreshToken;
                 return this.Request.CreateResponse(HttpStatusCode.Created, responseSession);
             };
 
             Sessions.CreateSessionAlreadyExistsDelegate<HttpResponseMessage> alreadyExistsCallback = () =>
             {
-                return this.Request.CreateErrorResponse(HttpStatusCode.Conflict, this.PreconditionViewModelEntityAlreadyExists());
+                return this.Request.CreateResponse(HttpStatusCode.Conflict, this.PreconditionViewModelEntityAlreadyExists());
             };
-
-            var authClient = this.AuthorizationClientContext;
+            
             if (!this.IsCredentialsPopulated())
             {
-                return await this.Context.Sessions.CreateAsync(Id, authClient, createSessionCallback, alreadyExistsCallback);
+                return await this.Context.Sessions.CreateAsync(Id, createSessionCallback, alreadyExistsCallback);
             }
 
             return await this.Context.Sessions.CreateAsync(Id,
                 this.Credentials.Method, this.Credentials.Provider, this.Credentials.UserId, this.Credentials.Token,
-                authClient,
                 createSessionCallback, alreadyExistsCallback,
                 (message) =>
                 {
-                    return this.Request.CreateErrorResponse(HttpStatusCode.Conflict, new Exception(message));
+                    return this.Request.CreateResponse(HttpStatusCode.Conflict, new Exception(message));
                 });
         }
     }

@@ -7,6 +7,7 @@ using System.Security.Permissions;
 using System.Runtime.Serialization;
 using BlackBarLabs.Security.CredentialProvider.ImplicitCreation;
 using BlackBarLabs.Security.Authorization;
+using System.Configuration;
 
 namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
 {
@@ -65,7 +66,15 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
             base.Initialize(controllerContext);
 
             Func<AuthorizationClient.IContext> fetchAuthorizationClient =
-                () => new AuthorizationClient.Context();
+                () =>
+                {
+                    var authClientType = ConfigurationManager.AppSettings["BlackBarLabs.Security.AuthorizationServer.API.AuthorizationClientType"];
+                    if(String.Compare(authClientType, "BlackBarLabs.Security.AuthorizationClient") == 0)
+                        return new AuthorizationClient.Context();
+                    if (String.Compare(authClientType, "BlackBarLabs.Security.AuthorizationLocal") == 0)
+                        return new AuthorizationClient.LocalContext();
+                    throw new Exception("BlackBarLabs.Security.AuthorizationServer.API.AuthorizationClientType not configured");
+                };
             controllerContext.Request.Properties.Add(
                 BlackBarLabs.Security.AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient,
                 fetchAuthorizationClient);

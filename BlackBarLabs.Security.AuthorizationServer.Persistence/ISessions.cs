@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace BlackBarLabs.Security.AuthorizationServer.Persistence
 {
-    public delegate T UpdateAuthenticationDelegate<T>(Guid storedAuthenticationId, Action<Guid> saveNewAuthenticationId);
+    public delegate Task<TResult> UpdateAuthenticationDelegate<TResult>(Guid storedAuthenticationId, Func<Guid, Task> saveNewAuthenticationId);
     public interface ISessions
     {
         Task CreateAsync(Guid sessionId, string refreshToken, Guid authorizationId = default(Guid));
