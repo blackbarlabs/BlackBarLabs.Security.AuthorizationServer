@@ -179,8 +179,10 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
                 () => Task.FromResult(authorizationDoesNotExists()));
         }
 
-        public async Task<TResult> UpdateClaims<TResult>(Guid authorizationId,
-            UpdateClaimsSuccessDelegate<TResult> onSuccess,
+        public async Task<TResult> UpdateClaims<TResult, TResultAdded>(Guid authorizationId,
+            UpdateClaimsSuccessDelegateAsync<TResult, TResultAdded> onSuccess,
+            Func<TResultAdded> addedSuccess,
+            Func<TResultAdded> addedFailure,
             Func<TResult> notFound,
             Func<string, TResult> failure)
         {
@@ -188,25 +190,25 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
                 async (authorizationDocument, save) =>
                 {
                     var claims = authorizationDocument.GetClaims(repository);
-                    var claimsDocs = new List<Documents.ClaimDocument>();
-                    var result = onSuccess(claims,
-                        (claimId, issuer, type, value) =>
+                    var result = await onSuccess(claims,
+                        async (claimId, issuer, type, value) =>
                         {
-                            claimsDocs.Add(new Documents.ClaimDocument()
+                            var claimDoc = new Documents.ClaimDocument()
                             {
                                 ClaimId = claimId,
-                                Issuer = issuer.AbsoluteUri,
-                                Type = type.AbsoluteUri,
+                                Issuer = issuer == default(Uri) ? default(string) : issuer.AbsoluteUri,
+                                Type = type == default(Uri) ? default(string) : type.AbsoluteUri,
                                 Value = value,
-                            });
-                        });
+                            };
 
-                    var guids = await authorizationDocument.AddClaimsAsync(claimsDocs, repository);
-                    if(guids.Count() > 0)
-                    {
-                        authorizationDocument.Claims = guids.ToByteArrayOfGuids();
-                        await save(authorizationDocument);
-                    }
+                            return await await authorizationDocument.AddClaimsAsync(claimDoc, repository,
+                                async () =>
+                                {
+                                    await save(authorizationDocument);
+                                    return addedSuccess();
+                                },
+                                () => Task.FromResult(addedFailure()));
+                        });
                     return result;
                 },
                 () => notFound());

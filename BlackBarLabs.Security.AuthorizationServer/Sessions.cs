@@ -58,7 +58,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                     {
                         await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId); // AuthorizationId may not need to be stored
 
-                        var jwtToken = await GenerateToken(sessionId, authorizationId, claims);
+                        var jwtToken = GenerateToken(sessionId, authorizationId, claims);
                         return onSuccess(authorizationId, jwtToken, refreshToken);
                     }
                     catch (BlackBarLabs.Persistence.ResourceAlreadyExistsException)
@@ -93,7 +93,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                                 return onAlreadyAuthenticated();
 
                             await saveAuthId(authorizationId);
-                            var jwtToken = await GenerateToken(sessionId, authorizationId, claims);
+                            var jwtToken = GenerateToken(sessionId, authorizationId, claims);
                             return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
                         },
                         () => onNotFound());
@@ -121,9 +121,9 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 () => { throw new Exception("Could not connect to auth system"); });
         }
 
-        private async Task<string> GenerateToken(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
+        private string GenerateToken(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
         {
-            var jwtClaims = await GetClaimsAsync(sessionId, authorizationId, claims);
+            var jwtClaims = GetClaims(sessionId, authorizationId, claims);
             return GenerateToken(sessionId, authorizationId, jwtClaims);
         }
 
@@ -143,17 +143,21 @@ namespace BlackBarLabs.Security.AuthorizationServer
             return jwtToken;
         }
 
-        private async Task<IEnumerable<Claim>> GetClaimsAsync(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
+        private IEnumerable<Claim> GetClaims(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
         {
             var claimsDefault = (IEnumerable<Claim>)new[] {
                 new Claim(ClaimIds.Session, sessionId.ToString()),
                 new Claim(ClaimIds.Authorization, authorizationId.ToString()) };
 
             var claimsExtra = claims.ToEnumerable(
-                (Guid claimId, Uri issuer, Uri type, string value) => 
-                    new Claim(type.AbsoluteUri, value, "string", issuer.AbsoluteUri));
-
-            await Task.FromResult(true);
+                (Guid claimId, Uri issuer, Uri type, string value) =>
+                {
+                    var typeString = type == default(Uri) ? string.Empty : type.AbsoluteUri;
+                    var issuerString = issuer == default(Uri) ? string.Empty : issuer.AbsoluteUri;
+                    return new Claim(typeString, value, "string", issuerString);
+                })
+                .ToArray();
+            
             return claimsDefault.Concat(claimsExtra);
         }
     }

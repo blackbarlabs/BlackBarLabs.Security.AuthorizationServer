@@ -30,6 +30,16 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 var claims = session.SessionHeader.Value.GetClaimsJwtString();
                 var thisClaim = claims.First(clm => String.Compare(clm.Type, type) == 0);
                 Assert.AreEqual(value, thisClaim.Value);
+
+                var type2 = "urn:example.com/Claim/type-zyx";
+                await testSession.ClaimPostAsync(auth.Id, type2, value, "http://example.com/issuers/test")
+                    .AssertAsync(HttpStatusCode.Created);
+                
+                session = await testSession.CreateSessionWithCredentialsAsync(credential);
+
+                claims = session.SessionHeader.Value.GetClaimsJwtString();
+                thisClaim = claims.First(clm => String.Compare(clm.Type, type2) == 0);
+                Assert.AreEqual(value, thisClaim.Value);
             });
         }
     }
