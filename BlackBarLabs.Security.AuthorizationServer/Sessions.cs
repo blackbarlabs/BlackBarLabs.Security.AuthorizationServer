@@ -32,16 +32,13 @@ namespace BlackBarLabs.Security.AuthorizationServer
             CreateSessionAlreadyExistsDelegate<T> alreadyExists)
         {
             var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
-
-            try
-            {
-                await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken);
-                var jwtToken = this.GenerateToken(sessionId, default(Guid), new Claim[] { });
-                return onSuccess.Invoke(default(Guid), jwtToken, refreshToken);
-            } catch(BlackBarLabs.Persistence.ResourceAlreadyExistsException)
-            {
-                return alreadyExists();
-            }
+            return await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, default(Guid),
+                () =>
+                {
+                    var jwtToken = this.GenerateToken(sessionId, default(Guid), new Claim[] { });
+                    return onSuccess.Invoke(default(Guid), jwtToken, refreshToken);
+                },
+                () => alreadyExists());
         }
 
         public async Task<T> CreateAsync<T>(Guid sessionId,
@@ -54,17 +51,13 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 async (authorizationId, claims) =>
                 {
                     var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
-                    try
-                    {
-                        await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId); // AuthorizationId may not need to be stored
-
-                        var jwtToken = GenerateToken(sessionId, authorizationId, claims);
-                        return onSuccess(authorizationId, jwtToken, refreshToken);
-                    }
-                    catch (BlackBarLabs.Persistence.ResourceAlreadyExistsException)
-                    {
-                        return alreadyExists();
-                    }
+                    return await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId,
+                        () =>
+                        {
+                            var jwtToken = GenerateToken(sessionId, authorizationId, claims);
+                            return onSuccess(authorizationId, jwtToken, refreshToken);
+                        },
+                        () => alreadyExists());
                 },
                 () => Task.FromResult(invalidCredentials("Credential not found")),
                 () => Task.FromResult(invalidCredentials("Credential failed")));
