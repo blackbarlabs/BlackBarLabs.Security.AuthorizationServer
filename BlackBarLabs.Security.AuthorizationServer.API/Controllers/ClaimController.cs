@@ -7,6 +7,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
 {
     public class ClaimController : BaseController
     {
+        public IHttpActionResult Get([FromUri]Resources.ClaimGet model)
+        {
+            model.Request = Request;
+            return model;
+        }
+
         public IHttpActionResult Post([FromBody]Resources.ClaimPost model)
         {
             model.Request = Request;

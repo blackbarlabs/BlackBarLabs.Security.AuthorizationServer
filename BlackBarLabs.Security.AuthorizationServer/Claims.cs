@@ -18,6 +18,36 @@ namespace BlackBarLabs.Security.AuthorizationServer
         private Context context;
         private Persistence.IDataContext dataContext;
 
+        public async Task<TResult> FindAsync<TResult>(Guid authorizationId, Uri type,
+            Func<IEnumerableAsync<Func<Guid, Guid, Uri, string, Task>>, TResult> found,
+            Func<TResult> authorizationNotFound,
+            Func<string, TResult> failure)
+        {
+            return await this.dataContext.Authorizations.UpdateClaims(authorizationId,
+                (claimsStored, addClaim) =>
+                {
+                    var claims = EnumerableAsync.YieldAsync<Func<Guid, Guid, Uri, string, Task>>(
+                        async (yieldAsync) =>
+                        {
+                            await claimsStored.ForAllAsync(
+                                async (claimIdStorage, issuerStorage, typeStorage, valueStorage) =>
+                                {
+                                    if (default(Uri) == type ||
+                                        String.Compare(type.AbsoluteUri, typeStorage.AbsoluteUri) == 0)
+                                    {
+                                        await yieldAsync(claimIdStorage, authorizationId, typeStorage, valueStorage);
+                                    }
+                                });
+                        });
+                    return Task.FromResult(found(claims));
+                },
+                // TODO: Create and use dataContext.Authorizations.FindClaims since next two methods are mute since addClaim is never invoked
+                () => true,
+                () => false,
+                () => authorizationNotFound(),
+                (whyFailed) => failure(whyFailed));
+        }
+
         internal Claims(Context context, Persistence.IDataContext dataContext)
         {
             this.dataContext = dataContext;
@@ -31,7 +61,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
             Func<TResult> alreadyExist,
             Func<string, TResult> failure)
         {
-            return await await this.dataContext.Authorizations.UpdateClaims(authorizationId,
+            return await this.dataContext.Authorizations.UpdateClaims<TResult, bool>(authorizationId,
                 async (claimsStored, addClaim) =>
                 {
                     bool existingClaimFound = false;
@@ -45,12 +75,16 @@ namespace BlackBarLabs.Security.AuthorizationServer
                     if (existingClaimFound)
                         return alreadyExist();
 
-                    addClaim(claimId, issuer, type, value);
+                    var successAddingClaim = await addClaim(claimId, issuer, type, value);
+                    if (successAddingClaim)
+                        return success();
 
-                    return success();
+                    return failure("Could not add claim");
                 },
-                () => Task.FromResult(authorizationNotFound()),
-                (whyFailed) => Task.FromResult(failure(whyFailed)));
+                () => true,
+                () => false,
+                () => authorizationNotFound(),
+                (whyFailed) => failure(whyFailed));
         }
     }
 }

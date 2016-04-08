@@ -20,6 +20,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
             {
                 Id = this.Id,
             };
+
             //Get the session and Extrude it's information
             Sessions.CreateSessionSuccessDelegate<HttpResponseMessage> createSessionCallback = (authorizationId, token, refreshToken) =>
             {
@@ -29,23 +30,26 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 return this.Request.CreateResponse(HttpStatusCode.Created, responseSession);
             };
 
-            Sessions.CreateSessionAlreadyExistsDelegate<HttpResponseMessage> alreadyExistsCallback = () =>
+            try
             {
-                return this.Request.CreateResponse(HttpStatusCode.Conflict, this.PreconditionViewModelEntityAlreadyExists());
-            };
-            
-            if (!this.IsCredentialsPopulated())
-            {
-                return await this.Context.Sessions.CreateAsync(Id, createSessionCallback, alreadyExistsCallback);
-            }
 
-            return await this.Context.Sessions.CreateAsync(Id,
-                this.Credentials.Method, this.Credentials.Provider, this.Credentials.UserId, this.Credentials.Token,
-                createSessionCallback, alreadyExistsCallback,
-                (message) =>
+                if (!this.IsCredentialsPopulated())
                 {
-                    return this.Request.CreateResponse(HttpStatusCode.Conflict, new Exception(message));
-                });
+                    return await this.Context.Sessions.CreateAsync(Id,
+                        createSessionCallback,
+                        () => this.Request.CreateResponse(HttpStatusCode.Conflict, "This session has already been created."));
+                }
+
+                return await this.Context.Sessions.CreateAsync(Id,
+                    this.Credentials.Method, this.Credentials.Provider, this.Credentials.UserId, this.Credentials.Token,
+                    createSessionCallback,
+                    () => this.Request.CreateResponse(HttpStatusCode.Conflict, "This session has already been created."),
+                    (message) => this.Request.CreateResponse(HttpStatusCode.Conflict, message));
+
+            } catch(Exception ex)
+            {
+                return this.Request.CreateResponse(HttpStatusCode.Conflict, ex.StackTrace);
+            }
         }
     }
 }

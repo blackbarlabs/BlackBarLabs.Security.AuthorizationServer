@@ -16,23 +16,19 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
 
         #region Actionables
 
-        public async Task CreateAsync(Guid sessionId, string refreshToken, Guid authorizationId = default(Guid))
+        public async Task<TResult> CreateAsync<TResult>(Guid sessionId, string refreshToken, Guid authorizationId,
+            Func<TResult> success,
+            Func<TResult> alreadyExists)
         {
             var document = new Documents.SessionDocument()
             {
-                RowKey = sessionId.AsRowKey(),
-                PartitionKey = sessionId.AsRowKey().GeneratePartitionKey(),
                 SessionId = sessionId,
                 RefreshToken = refreshToken,
                 AuthorizationId = authorizationId,
             };
-            try
-            {
-                await repository.CreateAsync(document);
-            } catch(Microsoft.WindowsAzure.Storage.StorageException)
-            {
-                throw new BlackBarLabs.Persistence.ResourceAlreadyExistsException();
-            }
+            return await this.repository.CreateAsync(sessionId, document,
+                () => success(),
+                () => alreadyExists());
         }
 
         public async Task<bool> DoesExistsAsync(Guid sessionId)

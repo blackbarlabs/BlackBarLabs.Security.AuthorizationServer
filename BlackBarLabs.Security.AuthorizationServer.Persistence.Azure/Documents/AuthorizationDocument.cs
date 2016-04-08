@@ -22,9 +22,20 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure.Documents
                     var claimDocumentIds = Claims.ToGuidsFromByteArray();
                     foreach (var claimDocumentId in claimDocumentIds)
                     {
-                        await repository.FindByIdAsync(claimDocumentId,
-                            async (ClaimDocument claimsDoc) => await yieldAsync(claimsDoc.ClaimId, new Uri(claimsDoc.Issuer), new Uri(claimsDoc.Type), claimsDoc.Value),
-                            () => Task.FromResult(true));
+                        await await repository.FindByIdAsync(claimDocumentId,
+                            async (ClaimDocument claimsDoc) =>
+                            {
+                                Uri issuer;
+                                Uri.TryCreate(claimsDoc.Issuer, UriKind.RelativeOrAbsolute, out issuer);
+                                Uri type;
+                                Uri.TryCreate(claimsDoc.Type, UriKind.RelativeOrAbsolute, out type);
+                                await yieldAsync(claimsDoc.ClaimId, issuer, type, claimsDoc.Value);
+                            },
+                            async () =>
+                            {
+                                // TODO: Flag data inconsitency
+                                await Task.FromResult(true);
+                            });
                     }
                 });
         }
@@ -34,18 +45,17 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure.Documents
         #region Properties
 
         public byte [] Claims { get; set; }
-
-        // TODO: Make concurrency safe
-        internal async Task<IEnumerable<Guid>> AddClaimsAsync(List<ClaimDocument> claimsDocs, AzureStorageRepository repository)
+        
+        internal async Task<TResult> AddClaimsAsync<TResult>(ClaimDocument claimsDoc, AzureStorageRepository repository,
+            Func<TResult> success,
+            Func<TResult> failure)
         {
-            var saveTasks = claimsDocs.Select(
-                async (claimsDoc) =>
-                {
-                    return await repository.CreateAsync(claimsDoc.ClaimId, claimsDoc,
-                        () => claimsDoc.ClaimId,
-                        () => Guid.Empty);
-                });
-            return await Task.WhenAll(saveTasks);
+            var claimDocumentIdsCurrent = Claims.ToGuidsFromByteArray();
+            var claimDocumentIds = claimDocumentIdsCurrent.Concat(new Guid[] { claimsDoc.ClaimId });
+            this.Claims = claimDocumentIds.ToByteArrayOfGuids();
+            return await repository.CreateAsync(claimsDoc.ClaimId, claimsDoc,
+                        () => success(),
+                        () => failure());
         }
 
         #endregion

@@ -12,17 +12,16 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
     public static class ClaimHelpers
     {
-        public static async Task<HttpResponseMessage> ClaimPostAsync(this TestSession testSession, 
+        public static async Task<HttpResponseMessage> ClaimPostAsync(this ITestSession testSession, 
             Guid authId, string type, string value, string issuer = default(string))
         {
-            if (default(string) == issuer)
-                issuer = "http://example.com/issuer";
-
+            Uri issuerUri;
+            Uri.TryCreate(issuer, UriKind.RelativeOrAbsolute, out issuerUri);
             var claim = new Resources.ClaimPost()
             {
                 Id = Guid.NewGuid(),
                 AuthorizationId = authId,
-                Issuer = new Uri(issuer),
+                Issuer = issuerUri,
                 Type = new Uri(type),
                 Value = value,
                 Signature = "",

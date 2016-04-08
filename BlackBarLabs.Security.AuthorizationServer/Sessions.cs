@@ -32,17 +32,14 @@ namespace BlackBarLabs.Security.AuthorizationServer
             CreateSessionAlreadyExistsDelegate<T> alreadyExists)
         {
             var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
-
-            try
+            return await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, default(Guid),
+                () =>
             {
-                await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken);
                 var jwtToken = this.GenerateToken(sessionId, default(Guid), new Claim[] { });
                 return onSuccess.Invoke(default(Guid), jwtToken, refreshToken);
-            } catch(BlackBarLabs.Persistence.ResourceAlreadyExistsException)
-            {
-                return alreadyExists();
+                },
+                () => alreadyExists());
             }
-        }
 
         public async Task<T> CreateAsync<T>(Guid sessionId,
             CredentialValidationMethodTypes method, Uri providerId, string username, string token,
@@ -54,17 +51,13 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 async (authorizationId, claims) =>
                 {
                     var refreshToken = JoshCodes.Core.SecureGuid.Generate().ToString("N");
-                    try
+                    return await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId,
+                        () =>
                     {
-                        await this.dataContext.Sessions.CreateAsync(sessionId, refreshToken, authorizationId); // AuthorizationId may not need to be stored
-
-                        var jwtToken = await GenerateToken(sessionId, authorizationId, claims);
+                            var jwtToken = GenerateToken(sessionId, authorizationId, claims);
                         return onSuccess(authorizationId, jwtToken, refreshToken);
-                    }
-                    catch (BlackBarLabs.Persistence.ResourceAlreadyExistsException)
-                    {
-                        return alreadyExists();
-                    }
+                        },
+                        () => alreadyExists());
                 },
                 (errorMessage) => Task.FromResult(invalidCredentials(errorMessage)),
                 () => Task.FromResult(invalidCredentials("Credential failed")));
@@ -93,7 +86,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                                 return onAlreadyAuthenticated();
 
                             await saveAuthId(authorizationId);
-                            var jwtToken = await GenerateToken(sessionId, authorizationId, claims);
+                            var jwtToken = GenerateToken(sessionId, authorizationId, claims);
                             return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
                         },
                         () => onNotFound("Error updating authentication"));
@@ -121,9 +114,9 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 () => { throw new Exception("Could not connect to auth system"); });
         }
 
-        private async Task<string> GenerateToken(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
+        private string GenerateToken(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
         {
-            var jwtClaims = await GetClaimsAsync(sessionId, authorizationId, claims);
+            var jwtClaims = GetClaims(sessionId, authorizationId, claims);
             return GenerateToken(sessionId, authorizationId, jwtClaims);
         }
 
@@ -143,7 +136,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
             return jwtToken;
         }
 
-        private async Task<IEnumerable<Claim>> GetClaimsAsync(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
+        private IEnumerable<Claim> GetClaims(Guid sessionId, Guid authorizationId, IEnumerableAsync<Persistence.ClaimDelegate> claims)
         {
             var claimsDefault = (IEnumerable<Claim>)new[] {
                 new Claim(ClaimIds.Session, sessionId.ToString()),
@@ -151,11 +144,13 @@ namespace BlackBarLabs.Security.AuthorizationServer
 
             var claimsExtra = claims.ToEnumerable(
                 (Guid claimId, Uri issuer, Uri type, string value) => 
-                    new Claim(type.AbsoluteUri, value, "string", issuer.AbsoluteUri));
+                {
+                    var typeString = type == default(Uri) ? string.Empty : type.AbsoluteUri;
+                    var issuerString = issuer == default(Uri) ? string.Empty : issuer.AbsoluteUri;
+                    return new Claim(typeString, value, "string", issuerString);
+                })
+                .ToArray();
 
-            var junkList = claimsExtra.ToList();
-
-            await Task.FromResult(true);
             return claimsDefault.Concat(claimsExtra);
         }
     }

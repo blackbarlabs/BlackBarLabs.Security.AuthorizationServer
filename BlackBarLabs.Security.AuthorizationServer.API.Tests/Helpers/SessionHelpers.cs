@@ -11,7 +11,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
     public static class SessionHelpers
     {
-        public static async Task<Resources.Session> CreateSessionAsync(this TestSession testSession)
+        public static async Task<Resources.Session> CreateSessionAsync(this ITestSession testSession)
         {
             var id = Guid.NewGuid();
             var session = new Resources.SessionPost()
@@ -23,7 +23,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return session;
         }
 
-        public static async Task<Resources.Session> CreateSessionWithCredentialsAsync(this TestSession testSession,
+        public static async Task<Resources.Session> CreateSessionWithCredentialsAsync(this ITestSession testSession,
             ICredential credentials = default(ICredential))
         {
             var auth = await testSession.CreateAuthorizationAsync();
@@ -42,7 +42,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return responseSession;
         }
 
-        public static async Task<HttpResponseMessage> AuthenticateSession(this TestSession testSession,
+        public static async Task<HttpResponseMessage> AuthenticateSession(this ITestSession testSession,
             Guid sessionId, ICredential credential)
         {
             var session = new Resources.SessionPut()

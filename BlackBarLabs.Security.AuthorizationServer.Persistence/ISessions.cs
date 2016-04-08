@@ -6,7 +6,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
     public delegate Task<TResult> UpdateAuthenticationDelegate<TResult>(Guid storedAuthenticationId, Func<Guid, Task> saveNewAuthenticationId);
     public interface ISessions
     {
-        Task CreateAsync(Guid sessionId, string refreshToken, Guid authorizationId = default(Guid));
+        Task<TResult> CreateAsync<TResult>(Guid sessionId, string refreshToken, Guid authorizationId,
+            Func<TResult> success,
+            Func<TResult> alreadyExists);
 
         /// <summary>
         /// Calls back the invocation method with currently stored authorization Id and 

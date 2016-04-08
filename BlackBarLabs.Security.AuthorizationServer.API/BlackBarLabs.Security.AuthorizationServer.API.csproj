@@ -304,6 +304,7 @@
     <Compile Include="Resources\Authorization\AuthorizationOptions.cs" />
     <Compile Include="Resources\Authorization\AuthorizationPost.cs" />
     <Compile Include="Resources\Claim\Claim.cs" />
+    <Compile Include="Resources\Claim\ClaimGet.cs" />
     <Compile Include="Resources\Claim\ClaimPost.cs" />
     <Compile Include="Resources\Credential\CredentialOptions.cs" />
     <Compile Include="Resources\Credential\CredentialDelete.cs" />
@@ -408,6 +409,10 @@
     <ProjectReference Include="..\BlackBarLabs.Api\BlackBarLabs.Api\BlackBarLabs.Api.csproj">
       <Project>{aaa1724b-0787-4ce1-bad5-e3c930db07c1}</Project>
       <Name>BlackBarLabs.Api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlackBarLabs.Core\BlackBarLabs.Core.csproj">
+      <Project>{73088f1b-3aca-476b-aa45-b7d6660f1c73}</Project>
+      <Name>BlackBarLabs.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlackBarLabs.Persistence.Azure\BlackBarLabs.Persistence.Azure.csproj">
       <Project>{a228d9d3-91c9-48cb-9498-8e7b39f10ffe}</Project>
