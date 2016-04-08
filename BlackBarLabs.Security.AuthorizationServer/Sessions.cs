@@ -66,7 +66,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                         return alreadyExists();
                     }
                 },
-                () => Task.FromResult(invalidCredentials("Credential not found")),
+                (errorMessage) => Task.FromResult(invalidCredentials(errorMessage)),
                 () => Task.FromResult(invalidCredentials("Credential failed")));
             return result;
         }
@@ -74,7 +74,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
         public delegate T AuthenticateSuccessDelegate<T>(Guid authorizationId, string token, string refreshToken);
         public delegate T AuthenticateInvalidCredentialsDelegate<T>();
         public delegate T AuthenticateAlreadyAuthenticatedDelegate<T>();
-        public delegate T AuthenticateNotFoundDelegate<T>();
+        public delegate T AuthenticateNotFoundDelegate<T>(string message);
         public async Task<T> AuthenticateAsync<T>(Guid sessionId,
             CredentialValidationMethodTypes credentialValidationMethod, Uri credentialsProviderId, string username, string token,
             AuthorizationClient.IContext authClient,
@@ -96,17 +96,17 @@ namespace BlackBarLabs.Security.AuthorizationServer
                             var jwtToken = await GenerateToken(sessionId, authorizationId, claims);
                             return onSuccess.Invoke(authorizationId, jwtToken, string.Empty);
                         },
-                        () => onNotFound());
+                        () => onNotFound("Error updating authentication"));
                     return updateAuthResult;
                 },
-                () => Task.FromResult(onNotFound()),
+                (errorMessage) => Task.FromResult(onNotFound(errorMessage)),
                 () => Task.FromResult(onInvalidCredentials()));
             return result;
         }
 
         private async Task<T> AuthenticateCredentialsAsync<T>(
             CredentialValidationMethodTypes method, Uri providerId, string username, string token,
-            Func<Guid, IEnumerableAsync<Persistence.ClaimDelegate>, T> onSuccess, Func<T> onAuthIdNotFound, Func<T> onInvalidCredential)
+            Func<Guid, IEnumerableAsync<Persistence.ClaimDelegate>, T> onSuccess, Func<string, T> onAuthIdNotFound, Func<T> onInvalidCredential)
         {
             var provider = this.context.GetCredentialProvider(method);
             return await await provider.RedeemTokenAsync(providerId, username, token,
@@ -114,10 +114,10 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 {
                     var result = await this.dataContext.Authorizations.FindAuthId(providerId, username,
                         (authorizationId, claims) => onSuccess(authorizationId, claims),
-                        () => onAuthIdNotFound());
+                        () => onAuthIdNotFound("Could not find auth Id for username: " + username));
                     return result;
                 },
-                () => Task.FromResult(onAuthIdNotFound()),
+                (errorMessage) => Task.FromResult(onAuthIdNotFound(errorMessage)),
                 () => { throw new Exception("Could not connect to auth system"); });
         }
 
@@ -152,6 +152,8 @@ namespace BlackBarLabs.Security.AuthorizationServer
             var claimsExtra = claims.ToEnumerable(
                 (Guid claimId, Uri issuer, Uri type, string value) => 
                     new Claim(type.AbsoluteUri, value, "string", issuer.AbsoluteUri));
+
+            var junkList = claimsExtra.ToList();
 
             await Task.FromResult(true);
             return claimsDefault.Concat(claimsExtra);

@@ -48,7 +48,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                         () => authorizationDoesNotExists(),
                         (alreadyAssociatedAuthorizationId) => alreadyAssociated(alreadyAssociatedAuthorizationId));
                 },
-                () => Task.FromResult(authenticationFailed()),
+                (errorMessage) => Task.FromResult(authenticationFailed()),
                 () => Task.FromResult(default(TResult)));
             return result;
         }
@@ -181,7 +181,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                                 return CreateCredentialResult.FailedToSave(ex.Message);
                             }
                         },
-                        () => Task.FromResult(CreateCredentialResult.AuthenticationFailed(method, providerId, username)),
+                        (errorMessage) => Task.FromResult(CreateCredentialResult.AuthenticationFailed(method, providerId, username)),
                         () => Task.FromResult(CreateCredentialResult.FailedToSave(string.Empty)));
                 }));
 

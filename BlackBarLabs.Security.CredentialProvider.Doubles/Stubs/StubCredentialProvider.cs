@@ -15,11 +15,11 @@ namespace BlackBarLabs.Security.CredentialProvider.Doubles.Stubs
         }
 
         public async Task<TResult> RedeemTokenAsync<TResult>(Uri providerId, string username, string token,
-            Func<string, TResult> success, Func<TResult> invalidCredentials, Func<TResult> couldNotConnect)
+            Func<string, TResult> success, Func<string, TResult> invalidCredentials, Func<TResult> couldNotConnect)
         {
             var result = await modifierDelegate.Invoke(providerId, username, token);
             if (default(string) == result)
-                return invalidCredentials();
+                return invalidCredentials("No token returned");
             return success(result);
         }
     }

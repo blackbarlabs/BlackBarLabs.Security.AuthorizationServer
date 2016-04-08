@@ -88,7 +88,7 @@ namespace BlackBarLabs.Security.CredentialProvider.Facebook.Tests
                 userId,
                 userAccessToken,
                 (token) => true,
-                () => false,
+                (errorMessage) => false,
                 () => false);
             Assert.IsTrue(worked);
         }

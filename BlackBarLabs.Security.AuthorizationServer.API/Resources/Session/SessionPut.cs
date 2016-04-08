@@ -42,10 +42,9 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                     return this.Request.CreateErrorResponse(HttpStatusCode.Conflict,
                         new ArgumentException("Session is already authenticated. Please create a new session to repeat authorization."));
                 },
-                () =>
+                (errorMessage) =>
                 {
-                    return this.Request.CreateErrorResponse(HttpStatusCode.NotFound,
-                        this.PreconditionViewModelEntityNotFound());
+                    return this.Request.CreateErrorResponse(HttpStatusCode.NotFound, errorMessage);
                 });
             return session;
         }
