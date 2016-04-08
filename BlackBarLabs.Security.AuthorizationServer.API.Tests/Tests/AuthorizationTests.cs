@@ -71,7 +71,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             await TestSession.StartAsync(async (testSession) =>
             {
                 var authClient = new AuthorizationClient.MockContext();
-                testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
+                //TODO: SessionBuilder testSession.AddRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
 
                 var auth = await testSession.CreateAuthorizationAsync();
                 var credential = await testSession.CreateCredentialVoucherAsync(auth.Id);

@@ -12,7 +12,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
     public static class ClaimHelpers
     {
-        public static async Task<HttpResponseMessage> ClaimPostAsync(this TestSession testSession, 
+        public static async Task<HttpResponseMessage> ClaimPostAsync(this ITestSession testSession, 
             Guid authId, string type, string value, string issuer = default(string))
         {
             Uri issuerUri;

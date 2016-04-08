@@ -13,7 +13,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
     public static class AuthorizationHelpers
     {
-        public static async Task<Resources.Authorization> CreateAuthorizationAsync(this TestSession testSession)
+        public static async Task<Resources.Authorization> CreateAuthorizationAsync(this ITestSession testSession)
         {
             var auth = new Resources.AuthorizationPost()
             {

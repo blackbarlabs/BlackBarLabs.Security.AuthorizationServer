@@ -11,7 +11,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
 {
     public static class CredentialHelpers
     {
-        public static async Task<Resources.Credential> CreateCredentialFacebookAsync(this TestSession testSession, 
+        public static async Task<Resources.Credential> CreateCredentialFacebookAsync(this ITestSession testSession, 
             Guid authId)
         {
             string userId, token;
@@ -30,14 +30,14 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return credential;
         }
 
-        public static async Task<Resources.Credential> CreateCredentialVoucherAsync(this TestSession testSession,
+        public static async Task<Resources.Credential> CreateCredentialVoucherAsync(this ITestSession testSession,
             Guid authId, TimeSpan duration = default(TimeSpan))
         {
             if (duration == default(TimeSpan))
                 duration = TimeSpan.FromMinutes(10.0);
 
             var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
-            var token = CredentialProvider.Voucher.Utilities.GenerateToken(authId, DateTime.UtcNow + duration);
+            var token = Tokens.VoucherTools.GenerateToken(authId, DateTime.UtcNow + duration);
             var credentialVoucher = new Resources.CredentialPost
             {
                 AuthorizationId = authId,
@@ -51,7 +51,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return credentialVoucher;
         }
 
-        public static async Task<Resources.Credential> CreateCredentialImplicitAsync(this TestSession testSession,
+        public static async Task<Resources.Credential> CreateCredentialImplicitAsync(this ITestSession testSession,
             Guid authId, string username = default(string), string password = default(string),
             Uri [] claimsProviders = default(Uri[]))
         {
