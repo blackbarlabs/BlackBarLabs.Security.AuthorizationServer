@@ -15,7 +15,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.Unauthorized,
-                "Get not permitted on Authorization Resource"));
+                "Get not permitted on Session Resource"));
         }
     }
 }
