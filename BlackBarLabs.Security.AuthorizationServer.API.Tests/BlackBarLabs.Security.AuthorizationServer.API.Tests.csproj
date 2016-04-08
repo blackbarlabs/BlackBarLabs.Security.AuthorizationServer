@@ -140,6 +140,7 @@
     <Compile Include="Helpers\CredentialHelpers.cs" />
     <Compile Include="Helpers\AuthorizationHelpers.cs" />
     <Compile Include="Helpers\SessionHelpers.cs" />
+    <Compile Include="Sessions\SessionBuilder.cs" />
     <Compile Include="Tests\ClaimsTest.cs" />
     <Compile Include="Tests\CredentialTests.cs" />
     <Compile Include="WorkflowTests.cs" />
