@@ -74,5 +74,32 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 .AssertAsync(HttpStatusCode.Created);
             return credentialImplicit;
         }
+
+
+        public static async Task<Resources.Credential> UpdateCredentialImplicitAsync(this ITestSession testSession,
+            Guid authId, string username = default(string), string password = default(string),
+            Uri[] claimsProviders = default(Uri[]))
+        {
+            if (default(string) == username)
+                username = Guid.NewGuid().ToString("N");
+            if (default(string) == password)
+                password = Guid.NewGuid().ToString("N");
+
+            var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
+            var credentialImplicit = new Resources.CredentialPut
+            {
+                AuthorizationId = authId,
+                Method = CredentialValidationMethodTypes.Implicit,
+                Provider = trustedVoucherProverId,
+                UserId = username,
+                Token = password,
+                ClaimsProviders = claimsProviders,
+            };
+            await testSession.PutAsync<CredentialController>(credentialImplicit)
+                .AssertAsync(HttpStatusCode.Created);
+            return credentialImplicit;
+        }
+
+
     }
 }

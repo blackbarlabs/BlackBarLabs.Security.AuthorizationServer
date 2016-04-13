@@ -4,8 +4,13 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
 {
     public class CredentialController : BaseController
     {
-        // POST: api/Order
         public IHttpActionResult Post([FromBody]Resources.CredentialPost model)
+        {
+            model.Request = Request;
+            return model;
+        }
+
+        public IHttpActionResult Put([FromBody]Resources.CredentialPut model)
         {
             model.Request = Request;
             return model;

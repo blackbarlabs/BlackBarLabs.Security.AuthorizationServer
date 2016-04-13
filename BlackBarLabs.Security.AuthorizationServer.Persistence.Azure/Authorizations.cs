@@ -64,7 +64,13 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
             }
             return false;
         }
-        
+
+        public Task<TResult> UpdateCredentialTokenAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,
+            Func<TResult> success, Func<TResult> authorizationDoesNotExists, Func<Guid, TResult> alreadyAssociated)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<T> CreateAuthorizationAsync<T>(Guid authorizationId, Func<T> onSuccess, Func<T> onAlreadyExist)
         {
             var authorizationDocument = new Documents.AuthorizationDocument()
@@ -178,6 +184,11 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure
                 },
                 () => Task.FromResult(authorizationDoesNotExists()));
         }
+
+
+
+
+
 
         public async Task<TResult> UpdateClaims<TResult, TResultAdded>(Guid authorizationId,
             UpdateClaimsSuccessDelegateAsync<TResult, TResultAdded> onSuccess,

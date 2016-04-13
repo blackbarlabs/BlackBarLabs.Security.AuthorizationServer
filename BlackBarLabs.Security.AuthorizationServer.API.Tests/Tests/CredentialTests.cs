@@ -69,5 +69,28 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 Assert.AreEqual(value, exampleClaim.Value);
             });
         }
+
+
+        [TestMethod]
+        public async Task CredentialPasswordCanBeUpdated()
+        {
+            await TestSession.StartAsync(async (testSession) =>
+            {
+                var auth = await testSession.CreateAuthorizationAsync();
+                var credential = await testSession.CreateCredentialImplicitAsync(auth.Id);
+                var session = await testSession.CreateSessionWithCredentialsAsync(credential);
+                Assert.AreEqual(auth.Id, session.AuthorizationId);
+
+                var currentToken = credential.Token;
+                var newToken = "BrandNewPassword";
+                var updatedCredentail = await testSession.UpdateCredentialImplicitAsync(auth.Id, credential.UserId, newToken);
+
+                Assert.AreNotEqual(currentToken, updatedCredentail.Token);
+                Assert.AreEqual(newToken, updatedCredentail.Token);
+                
+            });
+        }
+
+
     }
 }

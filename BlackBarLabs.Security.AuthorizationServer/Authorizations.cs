@@ -29,6 +29,8 @@ namespace BlackBarLabs.Security.AuthorizationServer
             return result;
         }
 
+        
+
         public async Task<TResult> CreateCredentialsAsync<TResult>(Guid authorizationId, 
             CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri[] claimsProviders,
             Func<TResult> success, Func<TResult> authenticationFailed,
@@ -51,7 +53,24 @@ namespace BlackBarLabs.Security.AuthorizationServer
             return result;
             }
 
+
+        public async Task<TResult> UpdateCredentialsAsync<TResult>(Guid authorizationId,
+            CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri[] claimsProviders,
+            Func<TResult> success, 
+            Func<TResult> authorizationDoesNotExists,
+            Func<TResult> updateFailed)
+        {
+            //Updates the Credential Password
+            var provider = this.context.GetCredentialProvider(method);
+            var result = await provider.UpdateTokenAsync(providerId, username, token,
+                            (returnToken) => success(),
+                            () => authorizationDoesNotExists(),
+                            () => updateFailed());
+            return result;
+        }
+
+
         #endregion
-        
+
     }
 }

@@ -308,6 +308,7 @@
     <Compile Include="Resources\Claim\ClaimPost.cs" />
     <Compile Include="Resources\Credential\CredentialOptions.cs" />
     <Compile Include="Resources\Credential\CredentialDelete.cs" />
+    <Compile Include="Resources\Credential\CredentialPut.cs" />
     <Compile Include="Resources\Credential\CredentialPost.cs" />
     <Compile Include="Resources\Credential\Credential.cs" />
     <Compile Include="Resources\Credential\CredentialGet.cs" />

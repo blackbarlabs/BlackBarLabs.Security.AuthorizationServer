@@ -22,5 +22,11 @@ namespace BlackBarLabs.Security.CredentialProvider.Doubles.Stubs
                 return invalidCredentials("No token returned");
             return success(result);
         }
+
+        public Task<TResult> UpdateTokenAsync<TResult>(Uri providerId, string username, string token, Func<string, TResult> success, Func<TResult> doesNotExist,
+            Func<TResult> updateFailed)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
