@@ -19,13 +19,11 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 this.Request.CreateErrorResponse(HttpStatusCode.Conflict,
                     new Exception("Invalid credentials"));
             }
-
-            var authClient = this.AuthorizationClientContext;
+            
             // Can't update a session that does not exist
             var session = await this.Context.Sessions.AuthenticateAsync(this.Id, 
                 this.Credentials.Method, this.Credentials.Provider,
                 this.Credentials.UserId, this.Credentials.Token,
-                authClient,
                 (authId, token, refreshToken) =>
                 {
                     this.AuthorizationId = authId;

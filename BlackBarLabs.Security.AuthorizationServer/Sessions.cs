@@ -70,7 +70,6 @@ namespace BlackBarLabs.Security.AuthorizationServer
         public delegate T AuthenticateNotFoundDelegate<T>(string message);
         public async Task<T> AuthenticateAsync<T>(Guid sessionId,
             CredentialValidationMethodTypes credentialValidationMethod, Uri credentialsProviderId, string username, string token,
-            AuthorizationClient.IContext authClient,
             AuthenticateSuccessDelegate<T> onSuccess,
             AuthenticateInvalidCredentialsDelegate<T> onInvalidCredentials,
             AuthenticateAlreadyAuthenticatedDelegate<T> onAlreadyAuthenticated,

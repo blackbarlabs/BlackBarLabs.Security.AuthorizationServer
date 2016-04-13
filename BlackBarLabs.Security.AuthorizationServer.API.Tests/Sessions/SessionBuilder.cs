@@ -14,8 +14,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             await TestSession.StartAsync(
                 async (session) =>
                 {
-                    var authClient = new AuthorizationClient.MockContext();
-                    session.UpdateRequestPropertyFetch(AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient, authClient);
                     await callback(session);
                 });
         }

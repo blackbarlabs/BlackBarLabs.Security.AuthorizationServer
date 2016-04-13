@@ -47,21 +47,5 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 });
             return context;
         }
-
-        private AuthorizationClient.IContext authorizationClientContext;
-        protected AuthorizationClient.IContext AuthorizationClientContext
-        {
-            get
-            {
-                if (default(Context) == authorizationClientContext)
-                {
-                    var getAuthorizationClientContext = (Func<AuthorizationClient.IContext>)
-                        this.Request.Properties[AuthorizationClient.ServicePropertyDefinitions.AuthorizationClient];
-                    this.authorizationClientContext = getAuthorizationClientContext();
-                }
-
-                return authorizationClientContext;
-            }
-        }
     }
 }
