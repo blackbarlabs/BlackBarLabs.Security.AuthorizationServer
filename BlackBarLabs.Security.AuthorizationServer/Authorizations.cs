@@ -32,7 +32,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
         
 
         public async Task<TResult> CreateCredentialsAsync<TResult>(Guid authorizationId, 
-            CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri[] claimsProviders,
+            CredentialValidationMethodTypes method, Uri providerId, string username, string token,
             Func<TResult> success, Func<TResult> authenticationFailed,
             Func<TResult> authorizationDoesNotExists,
             Func<Guid, TResult> alreadyAssociated)
@@ -43,7 +43,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 async (resultToken) =>
                 {
                     return await this.dataContext.Authorizations.CreateCredentialProviderAsync(authorizationId,
-                        providerId, username, claimsProviders,
+                        providerId, username,
                         () => success(),
                         () => authorizationDoesNotExists(),
                         (alreadyAssociatedAuthorizationId) => alreadyAssociated(alreadyAssociatedAuthorizationId));
@@ -55,7 +55,7 @@ namespace BlackBarLabs.Security.AuthorizationServer
 
 
         public async Task<TResult> UpdateCredentialsAsync<TResult>(Guid authorizationId,
-            CredentialValidationMethodTypes method, Uri providerId, string username, string token, Uri[] claimsProviders,
+            CredentialValidationMethodTypes method, Uri providerId, string username, string token,
             Func<TResult> success, 
             Func<TResult> authorizationDoesNotExists,
             Func<TResult> updateFailed)

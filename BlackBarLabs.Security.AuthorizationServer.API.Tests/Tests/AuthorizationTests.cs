@@ -55,7 +55,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 {
                     Id = Guid.NewGuid(),
                     AuthorizationId = auth2.Id,
-                    ClaimsProviders = credential.ClaimsProviders,
                     Method = credential.Method,
                     Provider = credential.Provider,
                     UserId = credential.UserId,
