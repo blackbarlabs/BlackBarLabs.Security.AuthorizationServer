@@ -359,6 +359,7 @@
     <None Include="Properties\PublishProfiles\gibbit-authentication-stg - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\humagelorderowl-authentication-dev - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\humagelorderowl-authentication-dev - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\humagelorderowl-authentication-test - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\humagelorderowl-authentication-test - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />

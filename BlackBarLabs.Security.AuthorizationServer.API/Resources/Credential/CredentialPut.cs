@@ -22,8 +22,8 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
             var creationResults = await Context.Authorizations.UpdateCredentialsAsync(AuthorizationId,
                 this.Method, this.Provider, this.UserId, this.Token, this.ClaimsProviders,
                 () => Request.CreateResponse(HttpStatusCode.Created, this),
-                () => Request.CreateErrorResponse(HttpStatusCode.Conflict, "Authentication failed"),
-                () => Request.CreateErrorResponse(HttpStatusCode.Conflict, "Authorization does not exist"));
+                () => Request.CreateErrorResponse(HttpStatusCode.Conflict, "Authorization does not exist"),
+                () => Request.CreateErrorResponse(HttpStatusCode.Conflict, "Update failed"));
             return creationResults;
         }
 
