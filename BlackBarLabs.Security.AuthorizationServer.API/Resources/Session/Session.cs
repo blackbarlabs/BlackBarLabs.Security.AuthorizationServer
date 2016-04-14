@@ -40,7 +40,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
                 this.credentials = new Credential()
                 {
                     AuthorizationId = value.AuthorizationId,
-                    ClaimsProviders = value.ClaimsProviders,
                     Method = value.Method,
                     Provider = value.Provider,
                     Token = value.Token,

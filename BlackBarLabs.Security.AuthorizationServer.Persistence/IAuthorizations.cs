@@ -38,7 +38,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence
             Func<TResult> notFound,
             Func<string, TResult> failure);
 
-        Task<TResult> CreateCredentialProviderAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,
+        Task<TResult> CreateCredentialProviderAsync<TResult>(Guid authorizationId, Uri providerId, string username,
             Func<TResult> success, Func<TResult> authorizationDoesNotExists, Func<Guid, TResult> alreadyAssociated);
 
         Task<TResult> UpdateCredentialTokenAsync<TResult>(Guid authorizationId, Uri providerId, string username, Uri[] claimsProviders,

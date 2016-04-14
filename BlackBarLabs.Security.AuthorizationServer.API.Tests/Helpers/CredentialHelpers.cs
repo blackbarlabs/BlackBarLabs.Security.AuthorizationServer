@@ -68,7 +68,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 Provider = trustedVoucherProverId,
                 UserId = username,
                 Token = password,
-                ClaimsProviders = claimsProviders,
             };
             await testSession.PostAsync<CredentialController>(credentialImplicit)
                 .AssertAsync(HttpStatusCode.Created);
@@ -93,7 +92,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 Provider = trustedVoucherProverId,
                 UserId = username,
                 Token = password,
-                ClaimsProviders = claimsProviders,
             };
             await testSession.PutAsync<CredentialController>(credentialImplicit)
                 .AssertAsync(HttpStatusCode.Created);

@@ -18,18 +18,6 @@ namespace BlackBarLabs.Security.AuthorizationServer.Persistence.Azure.Documents
         public byte[] ExternalClaimsLocations { get; set; }
 
         #endregion
-
-        internal Uri[] GetExternalClaimsLocations()
-        {
-            return this.ExternalClaimsLocations
-                .FromByteArray((bytes) => new Uri(System.Text.Encoding.UTF8.GetString(bytes)))
-                .ToArray();
-        }
-
-        internal void SetExternalClaimsLocations(Uri[] externalClaimsLocations)
-        {
-            ExternalClaimsLocations = externalClaimsLocations.ToByteArray(
-                (externalClaimsLocation) => System.Text.Encoding.UTF8.GetBytes(externalClaimsLocation.AbsoluteUri));
-        }
+        
     }
 }

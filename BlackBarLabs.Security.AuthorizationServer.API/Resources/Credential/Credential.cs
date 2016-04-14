@@ -27,10 +27,7 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
 
         [DataMember]
         public string Token { get; set; }
-
-        [DataMember]
-        public Uri[] ClaimsProviders { get; set; }
-
+        
         #endregion
 
     }
