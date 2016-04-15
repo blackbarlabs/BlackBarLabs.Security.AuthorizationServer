@@ -62,10 +62,20 @@ namespace BlackBarLabs.Security.AuthorizationServer
         {
             //Updates the Credential Password
             var provider = this.context.GetCredentialProvider(method);
-            var result = await provider.UpdateTokenAsync(providerId, username, token,
-                            (returnToken) => success(),
-                            () => authorizationDoesNotExists(),
-                            () => updateFailed());
+            var result = await await provider.UpdateTokenAsync(providerId, username, token,
+                (returnToken) => Task.FromResult(success()),
+                async () =>
+                {
+                    if (method != CredentialValidationMethodTypes.Implicit)
+                        return authorizationDoesNotExists();
+                    return await CreateCredentialsAsync(authorizationId, 
+                        method, providerId, username, token,
+                        success,
+                        updateFailed,
+                        authorizationDoesNotExists,
+                        (authIdExists) => updateFailed());
+                },
+                () => Task.FromResult(updateFailed()));
             return result;
         }
 

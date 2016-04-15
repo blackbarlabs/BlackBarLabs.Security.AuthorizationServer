@@ -36,8 +36,8 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 AuthorizationId = auth.Id,
                 Credentials = (Resources.Credential)credentials,
             };
-            var createSessionResponse = await testSession.PostAsync<SessionController>(session);
-            createSessionResponse.Assert(HttpStatusCode.Created);
+            var createSessionResponse = await testSession.PostAsync<SessionController>(session)
+                .AssertAsync(HttpStatusCode.Created);
             var responseSession = createSessionResponse.GetContent<Resources.Session>();
             return responseSession;
         }
