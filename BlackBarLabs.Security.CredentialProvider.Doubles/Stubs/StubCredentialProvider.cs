@@ -28,5 +28,10 @@ namespace BlackBarLabs.Security.CredentialProvider.Doubles.Stubs
         {
             throw new NotImplementedException();
         }
+
+        public Task<TResult> GetCredentialsAsync<TResult>(Uri providerId, string username, Func<string, TResult> success, Func<TResult> doesNotExist)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

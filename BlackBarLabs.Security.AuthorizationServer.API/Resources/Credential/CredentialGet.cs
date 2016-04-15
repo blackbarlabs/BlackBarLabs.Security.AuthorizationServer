@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Net.Http;
@@ -12,9 +10,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Resources
     {
         #region Actionables
         
-        public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Querying Credential Resource is not yet supported"));
+            return await this.Context.Authorizations.GetCredentialsAsync(
+                this.Method, this.Provider, this.UserId, 
+                (id) => Request.CreateResponse(HttpStatusCode.OK, id), 
+                () => Request.CreateResponse(HttpStatusCode.NotFound));
         }
 
         #endregion

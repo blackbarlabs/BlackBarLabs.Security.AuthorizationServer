@@ -98,6 +98,29 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
             return credentialImplicit;
         }
 
+        public static async Task<string> GetCredentialImplicitAsync(this ITestSession testSession,
+            string username, Action found, Action notFound )
+        {
+            var trustedVoucherProverId = CredentialProvider.Voucher.Utilities.GetTrustedProviderId();
+            var credentialImplicitGet = new Resources.CredentialGet
+            {
+                Method = CredentialValidationMethodTypes.Implicit,
+                Provider = trustedVoucherProverId,
+                UserId = username
+            };
+            var response = await testSession.GetAsync<CredentialController>(credentialImplicitGet);
+            if (response.StatusCode == HttpStatusCode.OK)
+            {
+                found();
+                return response.Content.ToString();
+            }
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                notFound();
+                return string.Empty;
+            }
+            return string.Empty;
+        }
 
     }
 }

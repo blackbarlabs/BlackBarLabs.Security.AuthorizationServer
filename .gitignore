@@ -6,8 +6,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-*.config
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -224,5 +222,7 @@ ModelManifest.xml
 # Generated TS typing files
 OrderOwl.Spa/typings/
 
-*BlackBarLabs.Security.AuthorizationServer.API/Web.config
-*BlackBarLabs.Security.AuthorizationServer.API.Tests/app.config
+App.Debug.config
+App.Release.config
+Web.Local.config
+

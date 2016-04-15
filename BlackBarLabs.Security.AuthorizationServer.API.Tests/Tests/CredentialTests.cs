@@ -101,7 +101,35 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Tests
                 var credential = await testSession.UpdateCredentialImplicitAsync(auth.Id, userId, password);
                 var session = await testSession.CreateSessionWithCredentialsAsync(credential);
                 Assert.AreEqual(auth.Id, session.AuthorizationId);
+            });
+        }
 
+        [TestMethod]
+        public async Task CanGetCredential()
+        {
+            await TestSession.StartAsync(async (testSession) =>
+            {
+                // User has creds
+                var userName = "User" + Guid.NewGuid();
+                var auth = await testSession.CreateAuthorizationAsync();
+                var credential = await testSession.CreateCredentialImplicitAsync(auth.Id, userName);
+                var session = await testSession.CreateSessionWithCredentialsAsync(credential);
+                Assert.AreEqual(auth.Id, session.AuthorizationId);
+                var found = false;
+                await
+                    testSession.GetCredentialImplicitAsync(userName, () => { found = true; }, () => { found = false; });
+                Assert.IsTrue(found);
+
+                // User doesn't have creds
+                userName = "User" + Guid.NewGuid();
+                auth = await testSession.CreateAuthorizationAsync();
+                credential = await testSession.CreateCredentialImplicitAsync(auth.Id, userName);
+                session = await testSession.CreateSessionWithCredentialsAsync(credential);
+                Assert.AreEqual(auth.Id, session.AuthorizationId);
+                found = false;
+                await
+                    testSession.GetCredentialImplicitAsync("NameThatHasNoCreds", () => { found = true; }, () => { found = false; });
+                Assert.IsFalse(found);
             });
         }
     }

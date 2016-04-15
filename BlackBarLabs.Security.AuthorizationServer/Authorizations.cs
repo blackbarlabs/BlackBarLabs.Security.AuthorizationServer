@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,6 +53,18 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 () => Task.FromResult(default(TResult)));
             return result;
             }
+
+        public async Task<TResult> GetCredentialsAsync<TResult>(CredentialValidationMethodTypes method, Uri providerId, string username,
+            Func<Guid, TResult> success,
+            Func<TResult> authorizationDoesNotExists)
+        {
+            var provider = this.context.GetCredentialProvider(method);
+            return
+                await
+                    provider.GetCredentialsAsync<TResult>(providerId, username,
+                        s => success(Guid.Parse(s)),
+                        authorizationDoesNotExists);
+        }
 
 
         public async Task<TResult> UpdateCredentialsAsync<TResult>(Guid authorizationId,
