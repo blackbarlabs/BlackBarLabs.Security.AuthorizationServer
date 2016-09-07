@@ -18,6 +18,12 @@ namespace BlackBarLabs.Security.AuthorizationServer.API.Controllers
             model.Request = Request;
             return model;
         }
+
+        public IHttpActionResult Put([FromBody]Resources.ClaimPut model)
+        {
+            model.Request = Request;
+            return model;
+        }
     }
 }
 

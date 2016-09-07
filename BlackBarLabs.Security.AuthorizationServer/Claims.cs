@@ -86,5 +86,38 @@ namespace BlackBarLabs.Security.AuthorizationServer
                 () => authorizationNotFound(),
                 (whyFailed) => failure(whyFailed));
         }
+
+        public async Task<TResult> UpdateAsync<TResult>(Guid claimId,
+            Guid authorizationId, Uri issuer, Uri type, string value, string signature,
+            Func<TResult> success,
+            Func<TResult> authorizationNotFound,
+            Func<TResult> claimNotFound,
+            Func<string, TResult> failure)
+        {
+            return await this.dataContext.Authorizations.UpdateClaims<TResult, bool>(authorizationId,
+                async (claimsStored, addClaim) =>
+                {
+                    bool existingClaimFound = false;
+                    await claimsStored.ForAllAsync(
+                        async (claimIdStorage, issuerStorage, typeStorage, valueStorage) =>
+                        {
+                            if (claimIdStorage == claimId)
+                                existingClaimFound = true;
+                            await Task.FromResult(true);
+                        });
+                    if (!existingClaimFound)
+                        return claimNotFound();
+
+                    var successAddingClaim = await addClaim(claimId, issuer, type, value);
+                    if (successAddingClaim)
+                        return success();
+
+                    return failure("Could not add claim");
+                },
+                () => true,
+                () => false,
+                () => authorizationNotFound(),
+                (whyFailed) => failure(whyFailed));
+        }
     }
 }
